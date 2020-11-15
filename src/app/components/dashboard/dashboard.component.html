@@ -1,0 +1,46 @@
+<div class="row">
+    <div class="col-md-9">
+      
+    </div>
+    <div class="col-md-3">
+     
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-6">
+      <div class="card card-stats">
+        <div *ngIf="stats" class="card-header card-header-rose card-header-icon">
+          <div class="card-icon">
+            <i class="fas fa-hand-holding-usd    "></i>
+          </div>
+          <p class="card-category">Monto por cobrar</p>
+          <h3 class="card-title">{{stats.debt | currency:'MXN':'symbol-narrow' }}</h3>
+        </div>
+        <div class="card-footer">
+          <div class="stats">
+            <div class="align-content-center" role="button" (click)="getStats()">
+              <i class="fas fa-redo    "></i>
+               Actualizar
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-6">
+      <div class="card card-stats">
+        <div *ngIf="stats" class="card-header card-header-success card-header-icon">
+          <div class="card-icon">
+            <i class="fa fa-coins" aria-hidden="true"></i>
+          </div>
+          <p class="card-category">Monto cobrado este mes</p>
+          <h3 class="card-title">{{stats.earn | currency:'MXN':'symbol-narrow'}}</h3>
+        </div>
+        <div class="card-footer">
+          <div class="stats">
+            <div class="align-content-center" role="button" (click)="getStats()">
+              <i class="fas fa-redo"></i>
+               Actualizar
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>

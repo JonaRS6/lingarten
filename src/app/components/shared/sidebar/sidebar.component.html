@@ -1,0 +1,40 @@
+<div class="sidebar" data-color="green" data-background-color="white" data-image="./assets/img/sidebar-1.jpg">
+    <!--
+      Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
+
+      Tip 2: you can also add an image using data-image tag
+  -->
+    <div class="logo">
+      <a class="simple-text logo-mini">
+        <div class="logo-img">
+          <img src="../../../../assets/img/lingarten.png" class="mt-2">
+        </div>
+      </a>  
+      <div class="simple-text logo-normal">
+        Lingarten
+      </div>
+    </div>
+    <div class="sidebar-wrapper">
+      <ul class="nav">
+        <li class="nav-item" routerLinkActive="active">
+          <a class="nav-link" routerLink="/panel">
+            <i class="fas fa-chart-bar    "></i>
+            <!-- <i class="material-icons">dashboard</i> -->
+            <p>Dashboard</p>
+          </a>
+        </li>
+        <li class="nav-item " routerLinkActive="active">
+          <a class="nav-link" routerLink="/table">
+            <i class="far fa-clipboard"></i>
+            <p>Tabla de clientes</p>
+          </a>
+        </li>
+        <!-- <li class="nav-item"routerLinkActive="active">
+          <a class="nav-link" routerLink="/pagos">
+            <i class="fa fa-credit-card" aria-hidden="true"></i>
+            <p>Pagos</p>
+          </a>
+        </li> -->
+      </ul>
+    </div>
+  </div>

@@ -1,7 +1,15 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { ClienttableComponent } from './components/clienttable/clienttable.component';
+import { ClientPanelComponent } from './components/client-panel/client-panel.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
-const routes: Routes = [];
+const routes: Routes = [
+  { path: 'table', component: ClienttableComponent},
+  { path: 'panel', component: DashboardComponent},
+  { path: 'client/:id', component: ClientPanelComponent},
+  { path: '**', pathMatch: 'full', redirectTo: 'table' }
+];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

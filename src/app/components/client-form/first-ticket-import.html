@@ -1,0 +1,11 @@
+<h1 mat-dialog-title>Antes de crear</h1>
+<div mat-dialog-content>
+  <p>Ingresa el importe de la primera nota de cobro. Esta se creara inmediatamente para su posterior pago.</p>
+  <mat-form-field>
+    <mat-label>Importe</mat-label>
+    <input type="number" matInput [(ngModel)]="data.importe">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button [mat-dialog-close]="data.importe" cdkFocusInitial>Ok</button>
+</div>

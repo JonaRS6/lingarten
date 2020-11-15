@@ -1,0 +1,15 @@
+<h1 mat-dialog-title>Crear nota</h1>
+<div mat-dialog-content>
+  <p>Ingresa el concepto de la nota</p>
+  <mat-form-field>
+    <mat-label>Concepto</mat-label>
+    <input type="text" matInput [(ngModel)]="data.concepto">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Importe</mat-label>
+    <input type="number" matInput [(ngModel)]="data.import">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
+</div>

@@ -1,0 +1,50 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header card-header-icon card-header-info">
+                <div class="card-icon">
+                  <i class="fa fa-wallet fa-2x" aria-hidden="true"></i>
+                </div>
+                <div class="row justify-content-between">
+                    <h4 class="card-title">Notas</h4>
+                    <button type="button" (click)="createTicket()" class="btn btn-primary btn-round btn-fab text-center btn-lg"><i id="addticket" class="fa fa-plus" aria-hidden="true"></i></button>
+                </div>
+            </div>
+            <div class="position-relative mr-3 ml-auto">
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 col-xl-4" *ngFor="let ticket of tickets">
+                        <div class="card card-stats shadow">
+                            <div class="card-header">
+                                <h4 class="card-title">{{ ticket.data.generated | date }}</h4>
+                                <p *ngIf="!ticket.data.paid" class="card-category">Pendiente</p>
+                                <p *ngIf="ticket.data.paid" class="card-category">Pagado</p>
+                                <div class="row">
+                                    <div class="col-8">
+                                        <span class="h3 font-weight-bold">${{ticket.data.cost}}.00</span>
+                                    </div>
+                                    <div class="col-4">
+                                        <button *ngIf="!ticket.data.paid && ticket.isPayLoading === false" (click)="updateTicket(ticket, 'pay')" class="btn btn-lg btn-warning btn-round btn-fab">
+                                            <i class="fas fa-money-check"></i>
+                                        </button>
+                                        <button *ngIf="ticket.data.paid && ticket.isPayLoading === false" (click)="updateTicket(ticket, 'restore')" class="btn btn-lg btn-success btn-round btn-fab cursor-default">
+                                            <i class="fas fa-money-check"></i>
+                                        </button>
+                                        <mat-spinner [diameter]="50" *ngIf="ticket.isPayLoading === true"></mat-spinner>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="row stats justify-content-between w-100 m-auto">
+                                        <p class="text-muted h6 w-75 pl-2">{{ticket.data.type}}</p>
+                                        <button type="button" (click)="updateTicket(ticket, 'delete')" class=" btn btn-danger btn-just-icon btn-link"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

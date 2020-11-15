@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "lingarten-efc0b": {
+      "hosting": {
+        "negocio": [
+          "lingarten-efc0b"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "lingarten-efc0b"
+  }
+}
