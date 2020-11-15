@@ -46,7 +46,7 @@
             <tbody cdkDropList (cdkDropListDropped)="drop($event)">
               <tr class="table-row" *ngFor="let cliente of clientTable" cdkDrag cdkDragLockAxis="y">
                 <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
-                  <button cdkDragHandle type="button" class="btn btn-just-icon btn-link"><i class="fa fa-sort" aria-hidden="true"></i></button>
+                  <button cdkDragHandle type="button" class="btn btn-just-icon btn-link"><i class="fa fa-sort text-danger" aria-hidden="true"></i></button>
                 </td>
                 <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
                   {{cliente.client.name}} {{cliente.client.lastname}}
@@ -88,7 +88,7 @@
             <tbody cdkDropList (cdkDropListDropped)="drop($event)">
               <tr class="table-row" *ngFor="let cliente of clientTable" cdkDrag cdkDragLockAxis="y">
                 <td *ngIf="cliente.client.active === false && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
-                  <button cdkDragHandle type="button" class="btn btn-just-icon btn-link"><i class="fa fa-sort" aria-hidden="true"></i></button>
+                  <button cdkDragHandle type="button" class="btn btn-just-icon btn-link"><i class="fa fa-sort text-danger" aria-hidden="true"></i></button>
                 </td>
                 <td *ngIf="cliente.client.active === false && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
                   {{cliente.client.name}} {{cliente.client.lastname}}
