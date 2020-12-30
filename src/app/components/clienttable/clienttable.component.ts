@@ -26,7 +26,6 @@ export class ClienttableComponent implements OnInit, OnDestroy {
 
   loading = true;
 
-
   constructor( public clienteService: ClientdataService, private chRef: ChangeDetectorRef ) {
     this.clienteService.clients.subscribe( resp => {
       console.log(resp);
@@ -35,10 +34,12 @@ export class ClienttableComponent implements OnInit, OnDestroy {
         this.updateClientsPosition();
         this.clientCount = this.clientTable.length;
       }
+      if (this.loading) {
+        setTimeout(() => {
+          window.scroll(0, clienteService.lastTableScroll);
+        }, 0);
+      }
       this.loading = false;
-      setTimeout(() => {
-        window.scroll(0, clienteService.lastTableScroll);
-      }, 0);
     });
   }
 
@@ -165,7 +166,7 @@ export class ClienttableComponent implements OnInit, OnDestroy {
     if ( currentDay >= 15 ) {
       printMonth = new Date().getMonth() + 1;
       if (printMonth > 11) {
-        printMonth = 1;
+        printMonth = 0;
         printYear = new Date().getFullYear() + 1;
       } else {
         printYear = new Date().getFullYear();
