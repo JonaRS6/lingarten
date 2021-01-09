@@ -124,6 +124,25 @@ export class ClientdataService {
     ); */
   }
 
+  createIncrease( id: string, increase: any ): Promise<any> {
+    return this.firestore.collection('clients').doc(id).collection('increases').add(increase);
+  }
+  
+  getIncreases( clientid: string): Observable<any> {
+    return this.firestore.collection('clients').doc(clientid).collection('increases', ref => ref.orderBy('date', 'asc'))
+    .snapshotChanges().pipe(
+      map(actions => actions.map(snap => {
+        const data = snap.payload.doc.data();
+        const id = snap.payload.doc.id;
+        return { id, data};
+      }))
+    );
+  }
+
+  deleteIncrease(clientid: string, id: string): Promise<any> {
+    return this.firestore.collection('clients').doc(clientid).collection('increases').doc(id).delete();
+  }
+
   getClientTickets(clientId: string): Observable<any> {
     return this.firestore.collection('clients').doc(clientId).collection('tickets', ref => ref.orderBy('generated', 'desc'))
       .snapshotChanges().pipe(

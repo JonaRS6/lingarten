@@ -59,6 +59,16 @@ export class ClientFormComponent implements OnInit {
       });
       return;
     }
+    let historyChange = false;
+    let increase;
+    if (this.cliente.service.cost !== this.clientForm.get('service.cost').value) {
+      increase = {
+        date: new Date().getTime(),
+        last: this.cliente.service.cost,
+        new: this.clientForm.get('service.cost').value
+      }
+      historyChange = true;
+    }
     this.cliente = Object.assign(this.cliente, this.clientForm.getRawValue());
     this.readForm();
 
@@ -72,6 +82,10 @@ export class ClientFormComponent implements OnInit {
             this.errorUpdate();
           }
         });
+      if (historyChange) {
+        this.service.createIncrease(this.cliente.id, increase);
+        console.log('actualizar historial');
+      }
     } else {
       const dialogRef = this.dialog.open(ImportFormComponent, {
         width: '250px',

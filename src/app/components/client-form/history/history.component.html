@@ -1,0 +1,47 @@
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header card-header-icon card-header-info">
+                <div class="card-icon">
+                  <i class="fa fa-clock fa-2x" aria-hidden="true"></i>
+                </div>
+                <div class="row justify-content-between">
+                    <h4 class="card-title">Historial</h4>
+                </div>
+            </div>
+            <div class="position-relative mr-3 ml-auto">
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <td>Fecha</td>
+                                <td>Inicial</td>
+                                <td>Modificado</td>
+                                <td>Diferencia</td>
+                            </tr>
+                        </thead>
+                        <tbody *ngFor="let increase of increases">
+                            <tr>
+                                <td>{{increase.data.date|date}}</td>
+                                <td>{{increase.data.last}}</td>
+                                <td>{{increase.data.new}}</td>
+                                <td *ngIf="increase.data.new - increase.data.last < 0" class="text-danger">{{increase.data.new - increase.data.last}}</td>
+                                <td *ngIf="increase.data.new - increase.data.last > 0" class="text-success">{{increase.data.new - increase.data.last}}</td>
+                                <td><button class="btn btn-danger btn-link" (click)="deleteIncrease(increase.id)"><i class="fas fa-times"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- <div *ngFor="let increase of increases" class="row">
+                    <div >
+                        <div>{{increase.data.date}},{{increase.data.last}},{{increase.data.new}}
+                            <button (click)="deleteIncrease(increase.id)">Eliminar</button>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</div>
