@@ -78,6 +78,9 @@ export class ClienttableComponent implements OnInit, OnDestroy {
     } else {
       clientes = this.clientTable;
     }
+    clientes = clientes.filter(item => item.client.active === true);
+    clientes = clientes.filter(item => item.client.printq === true);
+    clientes = clientes.reverse();
     const doc = new jsPDF('p', 'mm', 'a6');
     doc.setFontSize(10);
     let i = 1;

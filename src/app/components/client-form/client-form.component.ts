@@ -22,6 +22,7 @@ export class ClientFormComponent implements OnInit {
   // importeInicial = new FormControl('');
 
   cliente: ClienteModel = new ClienteModel();
+  printq : boolean;
   constructor( private fb: FormBuilder, private service: ClientdataService,
                private router: ActivatedRoute, public dialog: MatDialog, private location: Location  ) {
     this.crearFormulario();
@@ -31,6 +32,8 @@ export class ClientFormComponent implements OnInit {
       this.service.getClient( id, this.cliente ).subscribe( (client) => {
         console.log({cliente: client});
         this.cliente = Object.assign(this.cliente, client);
+        this.printq = client.printq;
+        console.log(this.printq);
         this.writeForm(client);
         console.log(this.clientForm.getRawValue());
       });
@@ -187,6 +190,7 @@ export class ClientFormComponent implements OnInit {
         colony: ['', Validators.required ],
         no: ['', Validators.required]
       }),
+      printq: ['' ]
     });
   }
   isValid( formCtrl: string ): boolean {

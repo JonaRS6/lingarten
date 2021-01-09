@@ -25,10 +25,12 @@ export class ClienteModel {
     cancelDate?: Date;
     position: number;
     active: boolean;
+    printq: boolean;
     constructor() {
         this.registerDate = new Date();
         this.position = 0;
         this.active = true;
+        this.printq = true;
     }
 }
 export class ClienteTable {

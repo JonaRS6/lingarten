@@ -234,6 +234,16 @@
             </button>
             <button *ngIf="cliente.id && cliente.active === true" type="button" (click)="cancelarCliente()" class="col-md-1 btn btn-inverse btn-outline-danger"><i class="fa fa-user-times" aria-hidden="true"></i></button>
             <button *ngIf="cliente.id && cliente.active === false" type="button" (click)="activarCliente()" class="col-md-1 btn btn-inverse btn-info"><i class="fa fa-user-check"></i></button>
+            <div class="col-md-3">
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input class="form-check-input" type="checkbox" formControlName="printq"> Añadir a cola de impresión
+                  <span class="form-check-sign">
+                    <span class="check"></span>
+                  </span>
+                </label>
+              </div>
+            </div>
           </div>
         </form>
       </div>

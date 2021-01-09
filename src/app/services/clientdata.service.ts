@@ -109,7 +109,7 @@ export class ClientdataService {
     ); */
   }
 
-  getClient( id: string, cliente: ClienteModel ): Observable<any> {
+  getClient( id: string, cliente: ClienteModel ): Observable<ClienteModel> {
     return this.clientsList.doc(id).snapshotChanges().pipe(
       map(a => {
         const data = a.payload.data() as ClienteModel;
