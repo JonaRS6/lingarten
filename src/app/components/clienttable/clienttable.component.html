@@ -52,7 +52,9 @@
                   {{cliente.client.name}} {{cliente.client.lastname}}
                 </td>
                 <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
-                  {{cliente.client.tel1}}
+                  <a [href]="'tel:'+cliente.client.tel1">
+                    {{cliente.client.tel1}}
+                  </a>
                 </td>
                 <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
                   {{cliente.client.address.street}} {{cliente.client.address.no}}, {{cliente.client.address.colony}}
