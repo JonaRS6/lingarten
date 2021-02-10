@@ -64,17 +64,21 @@ export class ClientFormComponent implements OnInit {
     }
     let historyChange = false;
     let increase;
-    if (this.cliente.service.cost !== this.clientForm.get('service.cost').value) {
-      increase = {
-        date: new Date().getTime(),
-        last: this.cliente.service.cost,
-        new: this.clientForm.get('service.cost').value
+
+    if (this.cliente.id) {
+      if (this.cliente.service.cost !== this.clientForm.get('service.cost').value) {
+        increase = {
+          date: new Date().getTime(),
+          last: this.cliente.service.cost,
+          new: this.clientForm.get('service.cost').value
+        }
+        historyChange = true;
       }
-      historyChange = true;
     }
     this.cliente = Object.assign(this.cliente, this.clientForm.getRawValue());
     this.readForm();
-
+    
+    
     if (this.cliente.id ) {
       this.loadingAlert();
       this.service.updateClient( this.cliente )
