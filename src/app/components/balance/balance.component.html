@@ -1,0 +1,170 @@
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-stats">
+            <div class="card-header card-header-success card-header-icon">
+              <div class="card-icon" id="entradas">
+                  <i class="fas fa-angle-double-up"></i>
+              </div>
+              <p class="card-category">Entradas</p>
+              <h3 class="card-title">{{totalEntradas|currency}}</h3>
+            </div>
+            <div class="card-footer">
+              <div class="stats">
+                <div>
+                    <form #f="ngForm"
+                    autocomplete="off"
+                    [formGroup]="entradaForm"
+                    (ngSubmit)="guardar('entrada')"
+                    class="row">
+                    <div class="col-md-3">
+                        <mat-form-field>
+                            <mat-label>Fecha</mat-label>
+                            <input
+                          type="date"
+                          id="fechaEntrada"
+                          formControlName="fecha"
+                          [class.is-invalid]="isValid( 'entrada', 'fecha')"
+                          matInput
+                        />
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-4">
+                        <mat-form-field>
+                            <mat-label>Concepto</mat-label>
+                            <input
+                          type="text"
+                          id="conceptoEntrada"
+                          formControlName="concepto"
+                          [class.is-invalid]="isValid( 'entrada', 'concepto')"
+                          matInput
+                        />
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-3">
+                        <mat-form-field>
+                            <mat-label>Cantidad</mat-label>
+                            <input
+                          type="number"
+                          id="cantidadEntrada"
+                          formControlName="cantidad"
+                          [class.is-invalid]="isValid( 'entrada', 'cantidad')"
+                          matInput
+                        />
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-round btn-fab text-center"><i id="addclient" class="fa fa-plus" aria-hidden="true"></i></button>
+                    </div>
+                    
+                </form>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="text-primary">
+                            <tr>
+                                <td>Fecha</td>
+                                <td>Concepto</td>
+                                <td>Cantidad</td>
+                                <td></td>
+                            </tr>
+                        </thead>
+                        <tbody *ngFor="let entrada of entradas">
+                            <tr>
+                                <td>{{entrada.fecha}}</td>
+                                <td>{{entrada.concepto}}</td>
+                                <td>{{entrada.cantidad}}</td>
+                                <td><button class="btn btn-danger btn-link" (click)="borrar('entrada', entrada.id)"><i class="fas fa-times"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card card-stats">
+          <div class="card-header card-header-danger card-header-icon">
+            <div class="card-icon" id="salidas">
+              <i class="fas fa-angle-double-down"></i>
+            </div>
+            <p class="card-category">Salidas</p>
+            <h3 class="card-title">{{totalSalidas|currency}}</h3>
+          </div>
+          <div class="card-footer">
+            <div class="stats">
+              <div>
+                  <form #f="ngForm"
+                  autocomplete="off"
+                  [formGroup]="salidaForm"
+                  (ngSubmit)="guardar('salida')"
+                  class="row">
+                  <div class="col-md-3">
+                      <mat-form-field>
+                          <mat-label>Fecha</mat-label>
+                          <input
+                        type="date"
+                        id="fechaSalida"
+                        formControlName="fecha"
+                        [class.is-invalid]="isValid( 'salida', 'fecha')"
+                        matInput
+                      />
+                      </mat-form-field>
+                  </div>
+                  <div class="col-md-4">
+                      <mat-form-field>
+                          <mat-label>Concepto</mat-label>
+                          <input
+                        type="text"
+                        id="conceptoSalida"
+                        formControlName="concepto"
+                        [class.is-invalid]="isValid( 'salida', 'concepto')"
+                        matInput
+                      />
+                      </mat-form-field>
+                  </div>
+                  <div class="col-md-3">
+                      <mat-form-field>
+                          <mat-label>Cantidad</mat-label>
+                          <input
+                        type="number"
+                        id="cantidadSalida"
+                        formControlName="cantidad"
+                        [class.is-invalid]="isValid( 'salida', 'cantidad')"
+                        matInput
+                      />
+                      </mat-form-field>
+                  </div>
+                  <div class="col-md-2">
+                      <button type="submit" class="btn btn-primary btn-round btn-fab text-center"><i id="addclient" class="fa fa-plus" aria-hidden="true"></i></button>
+                  </div>
+                  
+              </form>
+              <div class="table-responsive">
+                  <table class="table">
+                      <thead class="text-primary">
+                          <tr>
+                              <td>Fecha</td>
+                              <td>Concepto</td>
+                              <td>Cantidad</td>
+                              <td></td>
+                          </tr>
+                      </thead>
+                      <tbody *ngFor="let salida of salidas">
+                          <tr>
+                              <td>{{salida.fecha}}</td>
+                              <td>{{salida.concepto}}</td>
+                              <td>{{salida.cantidad}}</td>
+                              <td><button class="btn btn-danger btn-link" (click)="borrar('salida', salida.id)"><i class="fas fa-times"></i></button></td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+  </div>
+</div>

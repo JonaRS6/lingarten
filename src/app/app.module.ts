@@ -41,6 +41,7 @@ import { TicketFormComponent } from './components/client-tickets/ticket-form.com
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { HistoryComponent } from './components/client-form/history/history.component';
+import { BalanceComponent } from './components/balance/balance.component';
 
 
 
@@ -56,7 +57,8 @@ import { HistoryComponent } from './components/client-form/history/history.compo
     ImportFormComponent,
     TicketFormComponent,
     DashboardComponent,
-    HistoryComponent
+    HistoryComponent,
+    BalanceComponent
   ],
   imports: [
     DataTablesModule,
