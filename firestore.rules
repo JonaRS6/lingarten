@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Emergency containment: deny all client access until least-privilege rules
+    // are defined and reviewed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
