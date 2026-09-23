@@ -2,14 +2,17 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    function isOwner() {
+    function isAdministrator() {
       return request.auth != null
-        && request.auth.token.email == "jersneme6@gmail.com"
+        && request.auth.token.email in [
+          "jersneme6@gmail.com",
+          "lingartendmor@gmail.com"
+        ]
         && request.auth.token.email_verified == true;
     }
 
     match /{allPaths=**} {
-      allow read, write: if isOwner();
+      allow read, write: if isAdministrator();
     }
   }
 }

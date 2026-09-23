@@ -5,7 +5,10 @@ import * as functions from 'firebase-functions/v1';
 initializeApp();
 
 const db = getFirestore();
-const OWNER_EMAIL = 'jersneme6@gmail.com';
+const ADMIN_EMAILS = new Set([
+  'jersneme6@gmail.com',
+  'lingartendmor@gmail.com'
+]);
 const MAX_TICKET_TYPE_LENGTH = 256;
 const FIRESTORE_BATCH_LIMIT = 500;
 
@@ -28,7 +31,7 @@ interface ClientRequest {
 
 type TicketAction = 'pay' | 'restore' | 'delete';
 
-function requireOwner(context: functions.https.CallableContext): void {
+function requireAdministrator(context: functions.https.CallableContext): void {
   const token = context.auth?.token;
 
   if (!token) {
@@ -38,7 +41,7 @@ function requireOwner(context: functions.https.CallableContext): void {
     );
   }
 
-  if (token.email !== OWNER_EMAIL || token.email_verified !== true) {
+  if (typeof token.email !== 'string' || !ADMIN_EMAILS.has(token.email.toLowerCase()) || token.email_verified !== true) {
     throw new functions.https.HttpsError(
       'permission-denied',
       'Esta cuenta no tiene permisos para usar esta función.'
@@ -99,7 +102,7 @@ function requireAction(value: unknown): TicketAction {
 }
 
 export const createTicket = functions.https.onCall(async (data: TicketRequest, context) => {
-  requireOwner(context);
+  requireAdministrator(context);
 
   const clientId = requireDocumentId(data?.clientId, 'clientId');
   const ticket = requireTicket(data?.ticket);
@@ -119,7 +122,7 @@ export const createTicket = functions.https.onCall(async (data: TicketRequest, c
 });
 
 export const createClient = functions.https.onCall(async (data: ClientRequest, context) => {
-  requireOwner(context);
+  requireAdministrator(context);
 
   const client = requireClient(data?.client);
   const ticket = requireTicket(data?.ticket);
@@ -139,7 +142,7 @@ export const createClient = functions.https.onCall(async (data: ClientRequest, c
 });
 
 export const getStats = functions.https.onCall(async (_data, context) => {
-  requireOwner(context);
+  requireAdministrator(context);
   return stats();
 });
 
@@ -148,7 +151,7 @@ export const updateTicket = functions.https.onCall(async (data: {
   ticketId?: unknown;
   action?: unknown;
 }, context) => {
-  requireOwner(context);
+  requireAdministrator(context);
 
   const clientId = requireDocumentId(data?.clientId, 'clientId');
   const ticketId = requireDocumentId(data?.ticketId, 'ticketId');
@@ -167,7 +170,7 @@ export const updateTicket = functions.https.onCall(async (data: {
 });
 
 export const quickPay = functions.https.onCall(async (data: {clientId?: unknown}, context) => {
-  requireOwner(context);
+  requireAdministrator(context);
 
   const clientId = requireDocumentId(data?.clientId, 'clientId');
   const unpaidTickets = await db.collection('clients').doc(clientId).collection('tickets')

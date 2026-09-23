@@ -2,16 +2,19 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isOwner() {
+    function isAdministrator() {
       return request.auth != null
-        && request.auth.token.email == "jersneme6@gmail.com"
+        && request.auth.token.email in [
+          "jersneme6@gmail.com",
+          "lingartendmor@gmail.com"
+        ]
         && request.auth.token.email_verified == true;
     }
 
-    // The dashboard contains customer and billing data. Only the verified owner
-    // account may access it until additional roles are deliberately introduced.
+    // The dashboard contains customer and billing data. Only verified
+    // administrator accounts may access it.
     match /{document=**} {
-      allow read, write: if isOwner();
+      allow read, write: if isAdministrator();
     }
   }
 }
