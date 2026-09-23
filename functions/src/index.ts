@@ -21,6 +21,11 @@ interface TicketRequest {
   ticket: Pick<Ticket, 'type' | 'cost'>;
 }
 
+interface ClientRequest {
+  client: unknown;
+  ticket: unknown;
+}
+
 type TicketAction = 'pay' | 'restore' | 'delete';
 
 function requireOwner(context: functions.https.CallableContext): void {
@@ -69,6 +74,22 @@ function requireTicket(value: unknown): Pick<Ticket, 'type' | 'cost'> {
   return {type, cost};
 }
 
+function requireClient(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Los datos del cliente no son válidos.');
+  }
+
+  const client = {...value as Record<string, unknown>};
+  delete client.id;
+
+  if (typeof client.name !== 'string' || client.name.trim().length < 2
+    || typeof client.lastname !== 'string' || client.lastname.trim().length < 2) {
+    throw new functions.https.HttpsError('invalid-argument', 'El nombre del cliente no es válido.');
+  }
+
+  return client;
+}
+
 function requireAction(value: unknown): TicketAction {
   if (value === 'pay' || value === 'restore' || value === 'delete') {
     return value;
@@ -95,6 +116,26 @@ export const createTicket = functions.https.onCall(async (data: TicketRequest, c
   });
 
   return {ticketId: ticketRef.id};
+});
+
+export const createClient = functions.https.onCall(async (data: ClientRequest, context) => {
+  requireOwner(context);
+
+  const client = requireClient(data?.client);
+  const ticket = requireTicket(data?.ticket);
+  const clientRef = db.collection('clients').doc();
+  const ticketRef = clientRef.collection('tickets').doc();
+  const batch = db.batch();
+
+  batch.create(clientRef, client);
+  batch.create(ticketRef, {
+    ...ticket,
+    generated: Date.now(),
+    paid: false
+  });
+  await batch.commit();
+
+  return {clientId: clientRef.id, ticketId: ticketRef.id};
 });
 
 export const getStats = functions.https.onCall(async (_data, context) => {

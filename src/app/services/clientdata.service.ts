@@ -38,36 +38,27 @@ export class ClientdataService {
     this.getClients();
   }
 
-  createClient( cliente: ClienteModel, ticket: Ticket ): Promise<boolean> {
-    let f: boolean;
+  async createClient( cliente: ClienteModel, ticket: Ticket ): Promise<boolean> {
     const clienteTemp = {
       ...cliente
     };
-    return this.clientsList.add(clienteTemp).then( (resp) => {
-      const ticketData = new TicketData();
-      ticketData.clientId = resp.id;
-      ticketData.ticket = ticket;
-      console.log(ticket);
-      const createTicket = this.functions.httpsCallable('createTicket');
-      createTicket(ticketData).subscribe(data => {
-        console.log(data);
-      });
-      console.log(resp);
-      cliente.id = resp.id;
-      f = true;
-      console.log(f);
-      return f;
-    }).catch( err => {
-      f = false;
-      console.log('hola puto');
-      return f;
-    });
-   /*  return this.http.post(`${this.URL}/clients.json`, cliente).pipe(
-      map( (resp: any) => {
-        cliente.id = resp.name;
-        return cliente;
-      })
-    ); */
+    delete clienteTemp.id;
+
+    try {
+      const createClient = this.functions.httpsCallable('createClient');
+      const response: any = await createClient({
+        client: clienteTemp,
+        ticket: {
+          ...ticket,
+          cost: Number(ticket.cost)
+        }
+      }).toPromise();
+      cliente.id = response.clientId;
+      return true;
+    } catch (error) {
+      console.error('No se pudo crear el cliente.', error);
+      return false;
+    }
   }
 
   updateClient( cliente: ClienteModel ): Promise<boolean> {
