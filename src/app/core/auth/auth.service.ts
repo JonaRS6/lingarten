@@ -18,18 +18,18 @@ export class AuthService {
 
   constructor(private angularFireAuth: AngularFireAuth) {}
 
-  async signInWithPassword(password: string): Promise<void> {
-    const credential = await this.angularFireAuth.signInWithEmailAndPassword(OWNER_EMAIL, password);
+  async signInWithGoogle(): Promise<void> {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({
+      login_hint: OWNER_EMAIL,
+      prompt: 'select_account'
+    });
+
+    const credential = await this.angularFireAuth.signInWithPopup(provider);
     if (!this.isOwner(credential.user)) {
       await this.signOut();
       throw new Error('Esta cuenta no está autorizada para usar Lingarten.');
     }
-  }
-
-  sendPasswordReset(): Promise<void> {
-    return this.angularFireAuth.sendPasswordResetEmail(OWNER_EMAIL, {
-      url: `${window.location.origin}/login`
-    });
   }
 
   signOut(): Promise<void> {

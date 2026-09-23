@@ -3,28 +3,15 @@
     <div class="login-mark" aria-hidden="true">L</div>
     <p class="login-kicker">LINGARTEN · PANEL PRIVADO</p>
     <h1 id="login-title">El jardín empieza<br>puertas adentro.</h1>
-    <p class="login-copy">Acceso reservado para la administración de clientes, servicios y cobros.</p>
-
-    <p class="login-error" *ngIf="error" role="alert">{{ error }}</p>
-    <p class="login-success" *ngIf="resetSent" role="status">
-      Revisa tu correo para crear o restablecer la contraseña.
+    <p class="login-copy">
+      Acceso reservado para la administración de clientes, servicios y cobros.
     </p>
 
-    <form (ngSubmit)="signIn()">
-      <label class="login-label" for="owner-email">Correo autorizado</label>
-      <input id="owner-email" class="login-input" type="email" value="jersneme6@gmail.com" readonly>
+    <p class="login-error" *ngIf="error" role="alert">{{ error }}</p>
 
-      <label class="login-label" for="owner-password">Contraseña</label>
-      <input id="owner-password" class="login-input" type="password" name="password" [(ngModel)]="password"
-        autocomplete="current-password" required [disabled]="loading">
-
-      <button class="login-button" type="submit" [disabled]="loading || !password">
-        <span>{{ loading ? 'Verificando acceso…' : 'Entrar al panel' }}</span>
-      </button>
-    </form>
-
-    <button class="login-reset" type="button" (click)="resetPassword()" [disabled]="loading">
-      Crear o restablecer contraseña
+    <button class="login-button" type="button" (click)="signIn()" [disabled]="loading">
+      <span class="login-google" aria-hidden="true">G</span>
+      <span>{{ loading ? 'Verificando acceso…' : 'Continuar con Google' }}</span>
     </button>
 
     <p class="login-footnote">Solo se autoriza la cuenta del propietario.</p>
