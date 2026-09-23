@@ -22,5 +22,13 @@
       "port": 4000
     },
     "singleProjectMode": true
+  },
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Lingarten",
+        "supportEmail": "jersneme6@gmail.com"
+      }
+    }
   }
 }
