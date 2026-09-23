@@ -11,6 +11,8 @@
 
 # dependencies
 /node_modules
+/functions/node_modules
+/functions/lib
 
 # Firebase web configuration is generated locally from the Firebase Console.
 /src/environments/environment.ts
