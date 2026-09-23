@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -14,7 +15,7 @@ export class NavbarComponent implements OnInit {
   mobileMenuVisible: any = 0;
   private toggleButton: any;
   private sidebarVisible: boolean;
-  constructor( private element: ElementRef, private router: Router ) {
+  constructor( private element: ElementRef, private router: Router, private auth: AuthService ) {
     this.sidebarVisible = false;
   }
 
@@ -104,6 +105,11 @@ export class NavbarComponent implements OnInit {
           this.mobileMenuVisible = 1;
 
       }
+  }
+
+  async signOut(): Promise<void> {
+    await this.auth.signOut();
+    await this.router.navigate(['/login']);
   }
 
 }

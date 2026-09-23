@@ -33,6 +33,7 @@ import {MatPaginatorModule} from '@angular/material/paginator';
 
 // Firebase
 import { AngularFireModule } from '@angular/fire';
+import { AngularFireAuthModule } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
 import { ClientPanelComponent } from './components/client-panel/client-panel.component';
 import { ClientTicketsComponent } from './components/client-tickets/client-tickets.component';
@@ -42,6 +43,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { HistoryComponent } from './components/client-form/history/history.component';
 import { BalanceComponent } from './components/balance/balance.component';
+import { LoginComponent } from './components/login/login.component';
 
 
 
@@ -58,7 +60,8 @@ import { BalanceComponent } from './components/balance/balance.component';
     TicketFormComponent,
     DashboardComponent,
     HistoryComponent,
-    BalanceComponent
+    BalanceComponent,
+    LoginComponent
   ],
   imports: [
     DataTablesModule,
@@ -82,6 +85,7 @@ import { BalanceComponent } from './components/balance/balance.component';
     MatTableModule,
     MatPaginatorModule,
     AngularFireModule.initializeApp(environment.firebase),
+    AngularFireAuthModule,
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   entryComponents: [
