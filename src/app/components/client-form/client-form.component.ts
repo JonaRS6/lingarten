@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ClienteModel } from '../../models/cliente.model';
 import { ClientdataService } from '../../services/clientdata.service';
 import { NgForm } from '@angular/forms';
@@ -23,8 +23,10 @@ export class ClientFormComponent implements OnInit {
 
   cliente: ClienteModel = new ClienteModel();
   printq : boolean;
+  saving = false;
   constructor( private fb: FormBuilder, private service: ClientdataService,
-               private router: ActivatedRoute, public dialog: MatDialog, private location: Location  ) {
+               private router: ActivatedRoute, private navigation: Router,
+               public dialog: MatDialog, private location: Location  ) {
     this.crearFormulario();
     // this.importeInicial.setValidators(Validators.required);
     const id = this.router.snapshot.paramMap.get('id');
@@ -80,14 +82,21 @@ export class ClientFormComponent implements OnInit {
     
     
     if (this.cliente.id ) {
+      this.saving = true;
       this.loadingAlert();
       this.service.updateClient( this.cliente )
         .then(resultado => {
+          Swal.close();
+          this.saving = false;
           if (resultado) {
             this.successUpdate('actualizó');
           } else {
             this.errorUpdate();
           }
+        }).catch(() => {
+          Swal.close();
+          this.saving = false;
+          this.errorUpdate();
         });
       if (historyChange) {
         this.service.createIncrease(this.cliente.id, increase);
@@ -99,27 +108,30 @@ export class ClientFormComponent implements OnInit {
         data: {import: 0}
       });
       dialogRef.afterClosed().subscribe(result => {
-        this.loadingAlert();
-        if (result) {
+        if (result !== undefined && result !== null && Number.isFinite(Number(result))) {
           const ticket: Ticket = {
             paid: false,
             type: 'Primer nota de cobro por el servicio de recolección semanal',
-            cost: result,
+            cost: Number(result),
             generated: 0
           };
+          this.saving = true;
+          this.loadingAlert();
           this.service.createClient( this.cliente, ticket )
             .then(resultado => {
+              Swal.close();
+              this.saving = false;
               if (resultado) {
                 this.successUpdate('guardó');
               } else {
                 this.errorUpdate();
               }
+            }).catch(() => {
+              Swal.close();
+              this.saving = false;
+              this.errorUpdate();
             });
-        } else {
-          this.errorUpdate();
         }
-        console.log('The dialog was closed');
-        console.log('result = ', result);
       });
     }
 
@@ -207,6 +219,10 @@ export class ClientFormComponent implements OnInit {
       title: `${this.cliente.name} ${this.cliente.lastname}`,
       text: `Se ${action} correctamente`,
       icon: 'success'
+    }).then(() => {
+      if (action === 'guardó' && this.cliente.id) {
+        this.navigation.navigate(['/client', this.cliente.id]);
+      }
     });
   }
   errorUpdate(): void {
@@ -221,7 +237,8 @@ export class ClientFormComponent implements OnInit {
       title: 'Espere',
       text: 'Guardando información',
       icon: 'info',
-      allowOutsideClick: true
+      allowOutsideClick: false,
+      showConfirmButton: false
     });
     Swal.showLoading();
   }
