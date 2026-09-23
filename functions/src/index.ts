@@ -130,7 +130,10 @@ export const createClient = functions.https.onCall(async (data: ClientRequest, c
   const ticketRef = clientRef.collection('tickets').doc();
   const batch = db.batch();
 
-  batch.create(clientRef, client);
+  batch.create(clientRef, {
+    ...client,
+    registerDate: FieldValue.serverTimestamp()
+  });
   batch.create(ticketRef, {
     ...ticket,
     generated: Date.now(),
