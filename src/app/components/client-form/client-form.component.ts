@@ -9,6 +9,7 @@ import {MatDialog} from '@angular/material/dialog';
 import { ImportFormComponent } from './import-form.component';
 import { Ticket } from '../../models/ticket-data.model';
 import { Location } from '@angular/common';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-client-form',
@@ -31,17 +32,14 @@ export class ClientFormComponent implements OnInit {
     // this.importeInicial.setValidators(Validators.required);
     const id = this.router.snapshot.paramMap.get('id');
     if ( id !== 'nuevo' ) {
-      this.service.getClient( id, this.cliente ).subscribe( (client) => {
-        console.log({cliente: client});
+      // Read once: a live copy would overwrite the form while it is being edited.
+      this.service.getClient( id ).pipe(take(1)).subscribe( (client) => {
         this.cliente = Object.assign(this.cliente, client);
         this.printq = client.printq;
-        console.log(this.printq);
         this.writeForm(client);
-        console.log(this.clientForm.getRawValue());
       });
       this.cliente.id = id;
     }
-    console.log(this.cliente);
    }
 
   ngOnInit(): void {
@@ -54,7 +52,6 @@ export class ClientFormComponent implements OnInit {
       this.clientForm.get('service.type').setValue('mensual');
     }
     if (this.clientForm.invalid) {
-      console.log('invalid');
       Object.values( this.clientForm.controls ).forEach ( control => {
         if ( control instanceof FormGroup ) {
           Object.values( control.controls ).forEach ( contr => contr.markAsTouched() );
@@ -68,12 +65,12 @@ export class ClientFormComponent implements OnInit {
     let increase;
 
     if (this.cliente.id) {
-      if (this.cliente.service.cost !== this.clientForm.get('service.cost').value) {
+      if (Number(this.cliente.service.cost) !== Number(this.clientForm.get('service.cost').value)) {
         increase = {
           date: new Date().getTime(),
           last: this.cliente.service.cost,
           new: this.clientForm.get('service.cost').value
-        }
+        };
         historyChange = true;
       }
     }
@@ -85,7 +82,11 @@ export class ClientFormComponent implements OnInit {
       this.saving = true;
       this.loadingAlert();
       this.service.updateClient( this.cliente )
-        .then(resultado => {
+        .then(async resultado => {
+          // The price history only records changes that were actually saved.
+          if (resultado && historyChange) {
+            await this.service.createIncrease(this.cliente.id, increase);
+          }
           Swal.close();
           this.saving = false;
           if (resultado) {
@@ -98,14 +99,10 @@ export class ClientFormComponent implements OnInit {
           this.saving = false;
           this.errorUpdate();
         });
-      if (historyChange) {
-        this.service.createIncrease(this.cliente.id, increase);
-        console.log('actualizar historial');
-      }
     } else {
       const dialogRef = this.dialog.open(ImportFormComponent, {
         width: '250px',
-        data: {import: 0}
+        data: {importe: 0}
       });
       dialogRef.afterClosed().subscribe(result => {
         if (result !== undefined && result !== null && Number.isFinite(Number(result))) {
@@ -137,7 +134,6 @@ export class ClientFormComponent implements OnInit {
 
   }
   cancelarCliente(): void {
-    console.log('Cancelando en componente');
     Swal.fire({
       title: 'Cancelar cliente',
       text: `Ya no se generarán notas automáticas`,
@@ -148,11 +144,9 @@ export class ClientFormComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.service.cancelClient(this.cliente);
-        Swal.fire(
-          'Cliente cancelado',
-          'success'
-        );
+        this.service.cancelClient(this.cliente)
+          .then(() => Swal.fire('Cliente cancelado', '', 'success'))
+          .catch(() => this.errorUpdate());
       } else {
         return;
       }
@@ -169,11 +163,9 @@ export class ClientFormComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.service.activeClient(this.cliente);
-        Swal.fire(
-          'Cliente activado',
-          'success'
-        );
+        this.service.activeClient(this.cliente)
+          .then(() => Swal.fire('Cliente activado', '', 'success'))
+          .catch(() => this.errorUpdate());
       } else {
         return;
       }

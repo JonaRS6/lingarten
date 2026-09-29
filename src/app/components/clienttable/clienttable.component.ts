@@ -1,16 +1,13 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { ClientdataService } from '../../services/clientdata.service';
 import { ClienteModel, ClienteTable } from '../../models/cliente.model';
 import { TicketPrintMode } from '../ticket-print/ticket-print-dialog.component';
 import { TicketPrintService } from '../../services/ticket-print.service';
 import { TicketPrintFlowService } from '../../services/ticket-print-flow.service';
-import { FormControl } from '@angular/forms';
-import {merge, Observable, of as observableOf} from 'rxjs';
+import { Subject } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-// Material Table
-import {MatPaginator} from '@angular/material/paginator';
-import {MatTableDataSource} from '@angular/material/table';
-import { startWith } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
+import Swal from 'sweetalert2';
 
 
 @Component({
@@ -18,25 +15,20 @@ import { startWith } from 'rxjs/operators';
   templateUrl: './clienttable.component.html',
   styleUrls: ['./clienttable.component.css']
 })
-export class ClienttableComponent implements OnInit, OnDestroy {
-  
+export class ClienttableComponent implements OnDestroy {
+
   clientTable: ClienteTable[] = [];
-
-
-  // variable para controlar la cantidad de clientes en la tabla
-  clientCount = 0;
+  // Rows shown for the current day, canceled and search filters.
+  visibleClients: ClienteTable[] = [];
 
   loading = true;
+  private destroy$ = new Subject<void>();
 
-  constructor( public clienteService: ClientdataService, private chRef: ChangeDetectorRef,
+  constructor( public clienteService: ClientdataService,
                private printer: TicketPrintService, private printFlow: TicketPrintFlowService ) {
-    this.clienteService.clients.subscribe( resp => {
-      console.log(resp);
+    this.clienteService.clients.pipe(takeUntil(this.destroy$)).subscribe( resp => {
       this.clientTable = resp;
-      if (this.clientTable.length !== this.clientCount) {
-        this.updateClientsPosition();
-        this.clientCount = this.clientTable.length;
-      }
+      this.filterClients();
       if (this.loading) {
         setTimeout(() => {
           window.scroll(0, clienteService.lastTableScroll);
@@ -44,34 +36,54 @@ export class ClienttableComponent implements OnInit, OnDestroy {
       }
       this.loading = false;
     });
+    this.clienteService.searchString.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.filterClients());
   }
 
-  ngOnInit(): void {
-  }
   ngOnDestroy(): void {
     this.clienteService.lastTableScroll = window.scrollY;
-    console.log(this.clienteService.lastTableScroll);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
-  updateClientsPosition(): void {
-    console.log('Actualizando clientes');
-    // tslint:disable-next-line: prefer-for-of
-    for (let index = 0; index < this.clientTable.length; index++) {
-      this.clientTable[index].client.position = index + 1;
-      this.clienteService.updateClientPosition(this.clientTable[index].client);
+
+  filterClients(): void {
+    const search = (this.clienteService.searchString.value || '').toLowerCase();
+    const day = this.clienteService.dayOption;
+    const canceled = this.clienteService.mostrarCancelados;
+    this.visibleClients = this.clientTable.filter(({ client }) =>
+      (canceled ? client.active === false : client.active === true && (day === '7' || client.service.day === day))
+      && client.name.concat(client.lastname).toLowerCase().includes(search)
+    );
+  }
+
+  trackByClient( index: number, row: ClienteTable ): string {
+    return row.client.id;
+  }
+
+  // Reorders the visible rows, then puts them back into the slots they held in
+  // the full list so hidden clients keep their place.
+  drop( event: CdkDragDrop<ClienteTable[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
     }
-  }
-  drop( event: CdkDragDrop<string[]>): void {
-    moveItemInArray(this.clientTable, event.previousIndex, event.currentIndex);
-    this.updateClientsPosition();
+    const slots = this.visibleClients.map(row => this.clientTable.indexOf(row));
+    moveItemInArray(this.visibleClients, event.previousIndex, event.currentIndex);
+    const reordered = [...this.clientTable];
+    slots.forEach((slot, index) => reordered[slot] = this.visibleClients[index]);
+    this.clientTable = reordered;
+    this.clienteService.updateClientPositions(reordered.map(row => row.client)).catch(error => {
+      console.error('No se pudo guardar el orden.', error);
+      Swal.fire({ title: 'Error', text: 'No se pudo guardar el orden de los clientes', icon: 'error' });
+    });
   }
   getClientsByDay( day: string ): void {
-    console.log(day);
     this.clienteService.mostrarCancelados = false;
     this.clienteService.dayOption = day;
+    this.filterClients();
   }
   showCanceled(): void {
     this.clienteService.mostrarCancelados = true;
     this.clienteService.dayOption = '7';
+    this.filterClients();
   }
   printTickets(): void {
     let clientes;
@@ -94,10 +106,11 @@ export class ClienttableComponent implements OnInit, OnDestroy {
   }
   quickPay(client: ClienteTable): void {
     client.isPayLoading = true;
-    this.clienteService.quickPay(client.client.id).then(res => {
-      console.log(res);
-    }).catch((err) => {
-      console.log(err);
+    this.clienteService.quickPay(client.client.id).catch((error) => {
+      console.error('No se pudo registrar el pago.', error);
+      Swal.fire({ title: 'Error', text: 'No se pudo registrar el pago', icon: 'error' });
+    }).finally(() => {
+      client.isPayLoading = false;
     });
   }
 

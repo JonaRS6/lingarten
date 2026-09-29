@@ -1,19 +1,18 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { ClienteModel, ClienteTable } from '../models/cliente.model';
-import { map, delay } from 'rxjs/operators';
-import { Observable, pipe } from 'rxjs';
+import { filter, map, shareReplay, switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 // Firebase
 import { AngularFirestoreCollection, AngularFirestore } from '@angular/fire/firestore';
 import { AngularFireFunctions } from '@angular/fire/functions';
 import { TicketData, Ticket } from '../models/ticket-data.model';
 import { FormControl } from '@angular/forms';
+import { AuthService } from '../core/auth/auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClientdataService {
-  private URL = 'https://lingarten-efc0b.firebaseio.com';
   clientsList: AngularFirestoreCollection<ClienteModel>;
   clients: Observable<ClienteTable[]>;
   // Table User Query
@@ -34,7 +33,7 @@ export class ClientdataService {
   columnsToDisplay = ['nombre', 'telefono', 'direccion', 'estado', 'acciones'];
   clientTable: ClienteTable[] = [];
 
-  constructor( private http: HttpClient, private firestore: AngularFirestore, private functions: AngularFireFunctions ) {
+  constructor( private firestore: AngularFirestore, private functions: AngularFireFunctions, private auth: AuthService ) {
     this.getClients();
   }
 
@@ -74,45 +73,54 @@ export class ClientdataService {
       f = false;
       return f;
     });
-    // return this.http.put(`${this.URL}/clients/${cliente.id}.json`, clienteTemp);
   }
-  cancelClient( cliente: ClienteModel ): Promise<void> {
-    console.log('cancelando en servicio');
-    return this.clientsList.doc(cliente.id).update({active: false, cancelDate: new Date().getTime()});
+  async cancelClient( cliente: ClienteModel ): Promise<void> {
+    const cancelDate = new Date().getTime();
+    await this.clientsList.doc(cliente.id).update({active: false, cancelDate});
+    Object.assign(cliente, {active: false, cancelDate});
   }
-  activeClient( cliente: ClienteModel ): Promise<void> {
-    return this.clientsList.doc(cliente.id).update({active: true});
+  async activeClient( cliente: ClienteModel ): Promise<void> {
+    await this.clientsList.doc(cliente.id).update({active: true});
+    cliente.active = true;
   }
-  updateClientPosition( cliente: ClienteModel): Promise<void> {
-    return this.firestore.collection('clients').doc(cliente.id).update({position: cliente.position});
-  }
+  // One listener shared by every screen for the whole session. Opening a new
+  // one per visit would re-read every client each time. It closes on sign-out,
+  // before the rules would reject it.
   getClients(): void {
     this.clientsList = this.firestore.collection<ClienteModel>('clients', ref => ref.orderBy('service.day').orderBy('position'));
-    this.clients = this.clientsList.snapshotChanges().pipe(
+    this.clients = this.auth.isAuthorized$.pipe(
+      switchMap(authorized => authorized ? this.clientsList.snapshotChanges() : of(null)),
+      filter(actions => actions !== null),
       map(actions => actions.map(a => {
         const data = a.payload.doc.data() as ClienteModel;
         const id = a.payload.doc.id;
         return { client: { id, ...data}, isPayLoading: false};
-      }))
+      })),
+      shareReplay(1)
     );
-    /* return this.http.get(`${this.URL}/clients.json`).pipe(
-      map( this.doArray )
-    ); */
   }
 
-  getClient( id: string, cliente: ClienteModel ): Observable<ClienteModel> {
-    return this.clientsList.doc(id).snapshotChanges().pipe(
-      map(a => {
-        const data = a.payload.data() as ClienteModel;
-        return {...data};
-      })
+  // Served from the shared client listener: no extra reads.
+  getClient( id: string ): Observable<ClienteModel> {
+    return this.clients.pipe(
+      map(rows => rows.find(row => row.client.id === id)),
+      filter(row => row !== undefined),
+      map(row => ({ ...row.client }))
     );
-    /* return this.http.get(`${this.URL}/clients/${id}.json`).pipe(
-      map( (resp: ClienteModel) => {
-        cliente = resp;
-        return cliente;
-      })
-    ); */
+  }
+
+  // Writes only the clients whose position changed, in a single batch.
+  updateClientPositions( clients: ClienteModel[] ): Promise<void> {
+    const batch = this.firestore.firestore.batch();
+    let changes = 0;
+    clients.forEach((client, index) => {
+      if (client.position !== index + 1) {
+        client.position = index + 1;
+        batch.update(this.clientsList.doc(client.id).ref, { position: client.position });
+        changes++;
+      }
+    });
+    return changes > 0 ? batch.commit() : Promise.resolve();
   }
 
   createIncrease( id: string, increase: any ): Promise<any> {
@@ -164,16 +172,8 @@ export class ClientdataService {
     const quickPay = this.functions.httpsCallable('quickPay');
     return quickPay({clientId}).toPromise();
   }
-  getStats(): Promise<any> {
+  getStats(): Promise<{debt: number; earns: number}> {
     const stats = this.functions.httpsCallable('getStats');
-    return stats({msg: 'Hola'}).toPromise();
-  }
-  getStatsPayed(): Observable<any> {
-    const currentDate = new Date();
-    return this.firestore.collectionGroup('tickets', ref => ref.where('paid', '==', true)
-    .where('paidDate', '>=', (new Date(currentDate.getFullYear(), currentDate.getMonth()).getTime()))).get();
-  }
-  getStatsDebt(): Observable<any> {
-    return this.firestore.collectionGroup('tickets', ref => ref.where('paid', '==', false)).get();
+    return stats({}).toPromise();
   }
 }

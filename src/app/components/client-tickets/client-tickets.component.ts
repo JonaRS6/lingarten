@@ -1,4 +1,6 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { ClientdataService } from '../../services/clientdata.service';
 import { TicketData, Ticket, StoredTicket } from '../../models/ticket-data.model';
@@ -16,32 +18,27 @@ import { TicketFormComponent } from './ticket-form.component';
   templateUrl: './client-tickets.component.html',
   styleUrls: ['./client-tickets.component.css']
 })
-export class ClientTicketsComponent implements OnInit {
+export class ClientTicketsComponent implements OnDestroy {
 tickets = [];
 clientId: string;
 client: ClienteModel;
+private destroy$ = new Subject<void>();
   constructor( private service: ClientdataService, private router: ActivatedRoute, public dialog: MatDialog,
                private printFlow: TicketPrintFlowService ) {
     this.clientId = this.router.snapshot.paramMap.get('id');
     if ( this.clientId !== 'nuevo' ) {
-      this.service.getClient( this.clientId, null ).subscribe(client => {
+      this.service.getClient( this.clientId ).pipe(takeUntil(this.destroy$)).subscribe(client => {
         this.client = { ...client, id: this.clientId };
       });
-      this.service.getClientTickets( this.clientId ).subscribe(data => {
+      this.service.getClientTickets( this.clientId ).pipe(takeUntil(this.destroy$)).subscribe(data => {
         this.tickets = data;
-        console.log({tickets: this.tickets});
-        /* this.tickets.forEach(ticket => {
-          const date = new Date(ticket.data.generated);
-          ticket.data.generated = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-        }); */
       });
     }
    }
 
-  ngOnInit(): void {
-    this.tickets.forEach(ticket => {
-      ticket.data.generated = new Date(ticket.data.generated).toTimeString();
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   createTicket(): void {
@@ -61,48 +58,36 @@ client: ClienteModel;
         ticketData.clientId = this.clientId;
         ticketData.ticket = ticket;
         this.service.createTicket( ticketData )
-          .subscribe(resultado => {
-            if (resultado) {
-              this.successUpdate();
-            } else {
+          .subscribe(
+            () => this.successUpdate(),
+            error => {
+              console.error('No se pudo crear la nota.', error);
               this.errorUpdate();
             }
-          });
-      } else {
-        this.errorUpdate();
+          );
       }
-      console.log('The dialog was closed');
-      console.log('result = ', result);
     });
   }
 
-  updateTicket( ticket: any, action ): void {
-    if (action === 'restore' || action === 'delete') {
-      let accion = '';
-      if (action === 'restore') {
-        accion = 'modificar';
-      } else {
-        accion = 'eliminar';
+  async updateTicket( ticket: StoredTicket, action: 'pay' | 'restore' | 'delete' ): Promise<void> {
+    const needsConfirmation = action === 'restore' || action === 'delete';
+    if (needsConfirmation) {
+      const result = await this.confirmAlert(action === 'restore' ? 'modificar' : 'eliminar');
+      if (!result.isConfirmed) {
+        return;
       }
-      this.confirmAlert(accion).then((result) => {
-        if (result.isConfirmed) {
-          ticket.isPayLoading = true;
-          this.service.updateTicket(this.clientId, ticket.id, action).then(data => {
-            console.log(data);
-          });
-          Swal.fire(
-            'Hecho!',
-            'success'
-          );
-        } else {
-          return;
-        }
-      });
-    } else {
-      ticket.isPayLoading = true;
-      this.service.updateTicket(this.clientId, ticket.id, action).then(data => {
-        console.log(data);
-      });
+    }
+    ticket.isPayLoading = true;
+    try {
+      await this.service.updateTicket(this.clientId, ticket.id, action);
+      if (needsConfirmation) {
+        Swal.fire('Hecho!', '', 'success');
+      }
+    } catch (error) {
+      console.error('No se pudo actualizar la nota.', error);
+      Swal.fire({ title: 'Error', text: 'No se pudo actualizar la nota', icon: 'error' });
+    } finally {
+      ticket.isPayLoading = false;
     }
   }
 

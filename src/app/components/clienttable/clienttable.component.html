@@ -43,23 +43,23 @@
                 <th scope="col">Acciones</th>
               </tr>
             </thead>
-            <tbody cdkDropList (cdkDropListDropped)="drop($event)">
-              <tr class="table-row" *ngFor="let cliente of clientTable" cdkDrag cdkDragLockAxis="y">
-                <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+            <tbody cdkDropList [cdkDropListData]="visibleClients" (cdkDropListDropped)="drop($event)">
+              <tr class="table-row" *ngFor="let cliente of visibleClients; trackBy: trackByClient" cdkDrag cdkDragLockAxis="y">
+                <td>
                   <button cdkDragHandle type="button" class="btn btn-just-icon btn-link"><i class="fa fa-sort text-danger" aria-hidden="true"></i></button>
                 </td>
-                <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   {{cliente.client.name}} {{cliente.client.lastname}}
                 </td>
-                <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   <a [href]="'tel:'+cliente.client.tel1">
                     {{cliente.client.tel1}}
                   </a>
                 </td>
-                <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   {{cliente.client.address.street}} {{cliente.client.address.no}}, {{cliente.client.address.colony}}
                 </td>
-                <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   <label *ngIf="cliente.client.status === 'pagado' && cliente.isPayLoading === false" 
                           class="badge-pill p-1 badge-success">Pagado</label>
                   <label *ngIf="cliente.client.status === 'pendiente' && cliente.isPayLoading === false" 
@@ -69,7 +69,7 @@
                           class="badge-pill p-1 badge-danger">Atrasado</label>
                   <mat-spinner [diameter]="50" *ngIf="cliente.isPayLoading === true"></mat-spinner>
                 </td>
-                <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   <button type="button" class="btn btn-info btn-round btn-fab" [routerLink]="['/client', cliente.client.id]"><i class="fa fa-pen" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-info btn-round btn-fab" [matMenuTriggerFor]="printMenu" [matMenuTriggerData]="{client: cliente.client}" title="Imprimir"><i class="fa fa-print" aria-hidden="true"></i></button>
                 </td>
@@ -87,25 +87,25 @@
                 <th scope="col">Acciones</th>
               </tr>
             </thead>
-            <tbody cdkDropList (cdkDropListDropped)="drop($event)">
-              <tr class="table-row" *ngFor="let cliente of clientTable" cdkDrag cdkDragLockAxis="y">
-                <td *ngIf="cliente.client.active === false && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+            <tbody cdkDropList [cdkDropListData]="visibleClients" (cdkDropListDropped)="drop($event)">
+              <tr class="table-row" *ngFor="let cliente of visibleClients; trackBy: trackByClient" cdkDrag cdkDragLockAxis="y">
+                <td>
                   <button cdkDragHandle type="button" class="btn btn-just-icon btn-link"><i class="fa fa-sort text-danger" aria-hidden="true"></i></button>
                 </td>
-                <td *ngIf="cliente.client.active === false && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   {{cliente.client.name}} {{cliente.client.lastname}}
                 </td>
-                <td *ngIf="cliente.client.active === false && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   {{cliente.client.tel1}}
                 </td>
-                <td *ngIf="cliente.client.active === false && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   {{cliente.client.address.street}} {{cliente.client.address.no}}, {{cliente.client.address.colony}}
                 </td>
-                <td *ngIf="cliente.client.active === false && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   <label *ngIf="cliente.client.active === false && cliente.isPayLoading === false" 
                           class="badge-pill p-1 ">Cancelado</label>
                 </td>
-                <td *ngIf="cliente.client.active === false && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
+                <td>
                   <button type="button" class="btn btn-info btn-round btn-fab" [routerLink]="['/client', cliente.client.id]"><i class="fa fa-pen" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-info btn-round btn-fab" [matMenuTriggerFor]="printMenu" [matMenuTriggerData]="{client: cliente.client}" title="Imprimir"><i class="fa fa-print" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-just-icon btn-link"><i class="fa fa-sort" aria-hidden="true"></i></button>
