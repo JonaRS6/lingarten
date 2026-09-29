@@ -30,6 +30,7 @@ import {DragDropModule} from '@angular/cdk/drag-drop';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatTableModule} from '@angular/material/table';
 import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatMenuModule} from '@angular/material/menu';
 
 // Firebase
 import { AngularFireModule } from '@angular/fire';
@@ -46,6 +47,7 @@ import { HistoryComponent } from './components/client-form/history/history.compo
 import { BalanceComponent } from './components/balance/balance.component';
 import { LoginComponent } from './components/login/login.component';
 import { ShellComponent } from './components/shared/shell/shell.component';
+import { TicketPrintDialogComponent } from './components/ticket-print/ticket-print-dialog.component';
 
 
 
@@ -64,7 +66,8 @@ import { ShellComponent } from './components/shared/shell/shell.component';
     HistoryComponent,
     BalanceComponent,
     LoginComponent,
-    ShellComponent
+    ShellComponent,
+    TicketPrintDialogComponent
   ],
   imports: [
     DataTablesModule,
@@ -87,13 +90,15 @@ import { ShellComponent } from './components/shared/shell/shell.component';
     DragDropModule,
     MatTableModule,
     MatPaginatorModule,
+    MatMenuModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   entryComponents: [
     ImportFormComponent,
-    TicketFormComponent
+    TicketFormComponent,
+    TicketPrintDialogComponent
   ],
   providers: [...EMULATOR_PROVIDERS],
   bootstrap: [AppComponent]

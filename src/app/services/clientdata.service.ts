@@ -155,6 +155,11 @@ export class ClientdataService {
     return payTicket({ clientId, ticketId, action}).toPromise();
   }
 
+  setTicketDate( clientId: string, ticketId: string, generated: number ): Promise<any> {
+    const setTicketDate = this.functions.httpsCallable('setTicketDate');
+    return setTicketDate({ clientId, ticketId, generated }).toPromise();
+  }
+
   quickPay( clientId: string ): Promise<any> {
     const quickPay = this.functions.httpsCallable('quickPay');
     return quickPay({clientId}).toPromise();

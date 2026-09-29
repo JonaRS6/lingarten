@@ -1,0 +1,43 @@
+<h1 mat-dialog-title>{{ titles[data.mode] }}</h1>
+<div mat-dialog-content>
+  <p class="text-muted">{{ data.client.name }} {{ data.client.lastname }}</p>
+
+  <mat-spinner *ngIf="loading" [diameter]="40" class="m-auto"></mat-spinner>
+
+  <ng-container *ngIf="!loading && (data.mode === 'previous' || data.mode === 'special')">
+    <p *ngIf="tickets.length === 0 && data.mode === 'previous'">Este cliente no tiene notas.</p>
+    <mat-radio-group class="d-flex flex-column" [ngModel]="selected" (ngModelChange)="select($event)">
+      <mat-radio-button *ngFor="let ticket of tickets" [value]="ticket" class="mb-2">
+        {{ ticket.data.generated | date }} · ${{ ticket.data.cost }}.00 · {{ ticket.data.paid ? 'Pagado' : 'Pendiente' }}
+        <small class="d-block text-muted">{{ ticket.data.type }}</small>
+      </mat-radio-button>
+      <mat-radio-button *ngIf="data.mode === 'special'" [value]="newTicket" class="mb-2">Nueva nota especial</mat-radio-button>
+    </mat-radio-group>
+  </ng-container>
+
+  <ng-container *ngIf="isNew">
+    <mat-form-field class="w-100">
+      <mat-label>Concepto</mat-label>
+      <input type="text" matInput maxlength="256" [(ngModel)]="concept">
+    </mat-form-field>
+    <mat-form-field class="w-100">
+      <mat-label>Importe</mat-label>
+      <input type="number" matInput min="0" [(ngModel)]="cost">
+    </mat-form-field>
+  </ng-container>
+
+  <p *ngIf="data.mode === 'single'">
+    {{ data.ticket.data.type }} · ${{ data.ticket.data.cost }}.00
+  </p>
+
+  <mat-form-field class="w-100" *ngIf="!loading">
+    <mat-label>{{ isNew ? 'Fecha de la nota' : 'Fecha a imprimir' }}</mat-label>
+    <input type="date" matInput [(ngModel)]="printDate">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions class="justify-content-end">
+  <button mat-button mat-dialog-close>Cancelar</button>
+  <button mat-button color="primary" [disabled]="!canPrint" (click)="confirm()">
+    <i class="fa fa-print" aria-hidden="true"></i> {{ isNew ? 'Crear e imprimir' : 'Imprimir' }}
+  </button>
+</div>

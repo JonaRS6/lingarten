@@ -1,7 +1,9 @@
 import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ClientdataService } from '../../services/clientdata.service';
 import { ClienteModel, ClienteTable } from '../../models/cliente.model';
-import { jsPDF } from 'jspdf';
+import { TicketPrintMode } from '../ticket-print/ticket-print-dialog.component';
+import { TicketPrintService } from '../../services/ticket-print.service';
+import { TicketPrintFlowService } from '../../services/ticket-print-flow.service';
 import { FormControl } from '@angular/forms';
 import {merge, Observable, of as observableOf} from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -26,7 +28,8 @@ export class ClienttableComponent implements OnInit, OnDestroy {
 
   loading = true;
 
-  constructor( public clienteService: ClientdataService, private chRef: ChangeDetectorRef ) {
+  constructor( public clienteService: ClientdataService, private chRef: ChangeDetectorRef,
+               private printer: TicketPrintService, private printFlow: TicketPrintFlowService ) {
     this.clienteService.clients.subscribe( resp => {
       console.log(resp);
       this.clientTable = resp;
@@ -81,42 +84,13 @@ export class ClienttableComponent implements OnInit, OnDestroy {
     clientes = clientes.filter(item => item.client.active === true);
     clientes = clientes.filter(item => item.client.printq === true);
     clientes = clientes.reverse();
-    const doc = new jsPDF('p', 'mm', 'a6');
-    doc.setFontSize(10);
-    let i = 1;
-    doc.setProperties({
-      title: `${this.clienteService.dayOption}${new Date().getDate()}`
-    });
-    for (const client of clientes) {
-      this.docGen(doc, client.client).addPage();
-      i++;
-    }
-    doc.deletePage(i);
-    doc.output('pdfobjectnewwindow');
+    this.printer.printAll(
+      clientes.map(item => ({ client: item.client, note: this.printer.serviceNote(item.client) })),
+      `${this.clienteService.dayOption}${new Date().getDate()}`
+    );
   }
-  printTicket( client: ClienteModel ): void {
-    const printDate = this.getPrintDate( client );
-    const doc = new jsPDF('p', 'mm', 'a6');
-    doc.setFontSize(10);
-    doc.setProperties({
-      title: `${client.name}${client.lastname}${printDate.getDate()}/${printDate.getMonth() + 1}/${printDate.getFullYear()}`
-    });
-    this.docGen(doc, client).output('pdfobjectnewwindow');
-  }
-  docGen(doc: jsPDF, client: ClienteModel): jsPDF {
-    // Fecha
-    const fecha = this.getPrintDate(client).toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'});
-    doc.text(fecha, 50, 50);
-    doc.autoPrint({variant: 'javascript'});
-    // Nombre
-    doc.text(`${client.name} ${client.lastname}`, 26, 57);
-    // Direccion
-    doc.text(`${client.address.street} #${client.address.no}, ${client.address.colony}`, 28, 64);
-    // Concepto
-    doc.text(`${client.service.cost}.00`, 84, 80);
-    // Total
-    doc.text(`${client.service.cost}.00`, 84, 127);
-    return doc;
+  printTicket( client: ClienteModel, mode: TicketPrintMode ): void {
+    this.printFlow.open(client, mode);
   }
   quickPay(client: ClienteTable): void {
     client.isPayLoading = true;
@@ -125,62 +99,6 @@ export class ClienttableComponent implements OnInit, OnDestroy {
     }).catch((err) => {
       console.log(err);
     });
-  }
-  getPrintDay( d: number, m: number, y: number ): Date {
-    let printDate: Date;
-    let curDay = 0;
-    let i = 1;
-    while ( curDay < 1 && i < 8) {
-      printDate = new Date( y, m, i++ );
-      if (printDate.getDay() === d ) {
-        curDay++;
-      }
-    }
-    console.log(printDate);
-    return printDate;
-  }
-  getPrintDate(client: ClienteModel ): Date {
-    let printWeekDay = 0;
-    let printMonth;
-    let printYear;
-    switch (client.service.day) {
-      case '1':
-        printWeekDay = 1;
-        break;
-      case '2':
-        printWeekDay = 2;
-        break;
-      case '3':
-        printWeekDay = 3;
-        break;
-      case '4':
-        printWeekDay = 4;
-        break;
-      case '5':
-        printWeekDay = 5;
-        break;
-      case '6':
-        printWeekDay = 6;
-        break;
-      default:
-        break;
-    }
-    const currentDay = new Date().getDate();
-    if ( currentDay >= 15 ) {
-      printMonth = new Date().getMonth() + 1;
-      if (printMonth > 11) {
-        printMonth = 0;
-        printYear = new Date().getFullYear() + 1;
-      } else {
-        printYear = new Date().getFullYear();
-      }
-
-    } else {
-      printMonth = new Date().getMonth();
-      printYear = new Date().getFullYear();
-    }
-    console.log( printYear, printMonth, 1);
-    return this.getPrintDay( printWeekDay, printMonth, printYear );
   }
 
 }

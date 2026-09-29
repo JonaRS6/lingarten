@@ -71,7 +71,7 @@
                 </td>
                 <td *ngIf="((cliente.client.service.day === clienteService.dayOption || clienteService.dayOption === '7') && cliente.client.active === true) && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
                   <button type="button" class="btn btn-info btn-round btn-fab" [routerLink]="['/client', cliente.client.id]"><i class="fa fa-pen" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-info btn-round btn-fab" (click)="printTicket(cliente.client)"><i class="fa fa-print" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-info btn-round btn-fab" [matMenuTriggerFor]="printMenu" [matMenuTriggerData]="{client: cliente.client}" title="Imprimir"><i class="fa fa-print" aria-hidden="true"></i></button>
                 </td>
               </tr>
             </tbody>
@@ -107,7 +107,7 @@
                 </td>
                 <td *ngIf="cliente.client.active === false && cliente.client.name.concat(cliente.client.lastname).toLowerCase().includes(clienteService.searchString.value.toLowerCase())">
                   <button type="button" class="btn btn-info btn-round btn-fab" [routerLink]="['/client', cliente.client.id]"><i class="fa fa-pen" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-info btn-round btn-fab" (click)="printTicket(cliente.client)"><i class="fa fa-print" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-info btn-round btn-fab" [matMenuTriggerFor]="printMenu" [matMenuTriggerData]="{client: cliente.client}" title="Imprimir"><i class="fa fa-print" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-just-icon btn-link"><i class="fa fa-sort" aria-hidden="true"></i></button>
                 </td>
               </tr>
@@ -119,3 +119,11 @@
     </div>
   </div>
 </div>
+
+<mat-menu #printMenu="matMenu">
+  <ng-template matMenuContent let-client="client">
+    <button mat-menu-item (click)="printTicket(client, 'current')">Nota del servicio actual</button>
+    <button mat-menu-item (click)="printTicket(client, 'previous')">Nota anterior…</button>
+    <button mat-menu-item (click)="printTicket(client, 'special')">Nota especial…</button>
+  </ng-template>
+</mat-menu>

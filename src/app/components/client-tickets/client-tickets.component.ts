@@ -1,7 +1,10 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ClientdataService } from '../../services/clientdata.service';
-import { TicketData, Ticket } from '../../models/ticket-data.model';
+import { TicketData, Ticket, StoredTicket } from '../../models/ticket-data.model';
+import { ClienteModel } from '../../models/cliente.model';
+import { TicketPrintFlowService } from '../../services/ticket-print-flow.service';
+import { fromDateInput, toDateInput } from '../../core/date-input';
 
 import Swal from 'sweetalert2';
 
@@ -16,9 +19,14 @@ import { TicketFormComponent } from './ticket-form.component';
 export class ClientTicketsComponent implements OnInit {
 tickets = [];
 clientId: string;
-  constructor( private service: ClientdataService, private router: ActivatedRoute, public dialog: MatDialog ) {
+client: ClienteModel;
+  constructor( private service: ClientdataService, private router: ActivatedRoute, public dialog: MatDialog,
+               private printFlow: TicketPrintFlowService ) {
     this.clientId = this.router.snapshot.paramMap.get('id');
     if ( this.clientId !== 'nuevo' ) {
+      this.service.getClient( this.clientId, null ).subscribe(client => {
+        this.client = { ...client, id: this.clientId };
+      });
       this.service.getClientTickets( this.clientId ).subscribe(data => {
         this.tickets = data;
         console.log({tickets: this.tickets});
@@ -39,7 +47,7 @@ clientId: string;
   createTicket(): void {
     const dialogRef = this.dialog.open(TicketFormComponent, {
       width: '250px',
-      data: {import: null, concepto: ''}
+      data: {import: null, concepto: '', fecha: toDateInput(new Date())}
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -47,7 +55,7 @@ clientId: string;
           paid: false,
           type: result.concepto,
           cost: result.import,
-          generated: 0
+          generated: result.fecha ? fromDateInput(result.fecha).getTime() : 0
         };
         const ticketData = new TicketData();
         ticketData.clientId = this.clientId;
@@ -96,6 +104,14 @@ clientId: string;
         console.log(data);
       });
     }
+  }
+
+  printTicket( ticket: StoredTicket ): void {
+    this.printFlow.open(this.client, 'single', ticket);
+  }
+
+  editDate( ticket: StoredTicket ): void {
+    this.printFlow.editDate(this.clientId, ticket);
   }
 
   confirmAlert( accion: string): Promise<any> {

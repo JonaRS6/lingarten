@@ -37,8 +37,12 @@
                             </div>
                             <div class="card-footer">
                                 <div class="row stats justify-content-between w-100 m-auto">
-                                        <p class="text-muted h6 w-75 pl-2">{{ticket.data.type}}</p>
-                                        <button type="button" (click)="updateTicket(ticket, 'delete')" class=" btn btn-danger btn-just-icon btn-link"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                                        <p class="text-muted h6 w-50 pl-2">{{ticket.data.type}}</p>
+                                        <div class="text-nowrap">
+                                            <button type="button" (click)="printTicket(ticket)" [disabled]="!client" class="btn btn-info btn-just-icon btn-link" title="Imprimir"><i class="fa fa-print" aria-hidden="true"></i></button>
+                                            <button type="button" (click)="editDate(ticket)" class="btn btn-info btn-just-icon btn-link" title="Cambiar fecha"><i class="fa fa-calendar-alt" aria-hidden="true"></i></button>
+                                            <button type="button" (click)="updateTicket(ticket, 'delete')" class=" btn btn-danger btn-just-icon btn-link"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                                        </div>
                                 </div>
                             </div>
                         </div>

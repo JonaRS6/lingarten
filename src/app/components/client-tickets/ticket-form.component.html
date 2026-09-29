@@ -9,6 +9,10 @@
     <mat-label>Importe</mat-label>
     <input type="number" matInput [(ngModel)]="data.import">
   </mat-form-field>
+  <mat-form-field>
+    <mat-label>Fecha</mat-label>
+    <input type="date" matInput [(ngModel)]="data.fecha">
+  </mat-form-field>
 </div>
 <div mat-dialog-actions>
   <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
