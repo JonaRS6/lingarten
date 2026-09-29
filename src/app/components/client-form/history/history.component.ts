@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { ClientdataService } from '../../../services/clientdata.service';
 
@@ -9,30 +11,27 @@ import Swal from 'sweetalert2';
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.css']
 })
-export class HistoryComponent implements OnInit {
+export class HistoryComponent implements OnDestroy {
 
   clientId: string;
   increases = [];
+  private destroy$ = new Subject<void>();
 
   constructor(private service: ClientdataService, private router: ActivatedRoute) { 
     this.clientId = this.router.snapshot.paramMap.get('id');
     if ( this.clientId !== 'nuevo' ) {
-      this.service.getIncreases( this.clientId ).subscribe(data => {
+      this.service.getIncreases( this.clientId ).pipe(takeUntil(this.destroy$)).subscribe(data => {
         this.increases = data;
-        console.log({increases: this.increases});
-        /* this.tickets.forEach(ticket => {
-          const date = new Date(ticket.data.generated);
-          ticket.data.generated = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-        }); */
       });
     }
   }
 
-  ngOnInit(): void {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   deleteIncrease(id: string): void {
-    console.log('pulsado');
     Swal.fire({
       title: 'Borrar registro',
       text: `Se perderá la información de cambio de precio`,
@@ -43,11 +42,9 @@ export class HistoryComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.service.deleteIncrease(this.clientId, id).then();
-        Swal.fire(
-          'Registro borrado',
-          'success'
-        );
+        this.service.deleteIncrease(this.clientId, id)
+          .then(() => Swal.fire('Registro borrado', '', 'success'))
+          .catch(() => Swal.fire('Error', 'No se pudo borrar el registro', 'error'));
       } else {
         return;
       }
