@@ -12,16 +12,21 @@ const ADMIN_EMAILS = new Set([
 const MAX_TICKET_TYPE_LENGTH = 256;
 const FIRESTORE_BATCH_LIMIT = 500;
 
+// 'manual' notes are the special ones created from the dashboard; 'system'
+// notes come from client registration and the monthly job.
+type TicketOrigin = 'manual' | 'system';
+
 interface Ticket {
   paid: boolean;
   generated: number;
   type: string;
   cost: number;
+  origin: TicketOrigin;
 }
 
 interface TicketRequest {
   clientId: string;
-  ticket: Pick<Ticket, 'type' | 'cost'>;
+  ticket: Pick<Ticket, 'type' | 'cost'> & {generated?: unknown};
 }
 
 interface ClientRequest {
@@ -77,6 +82,16 @@ function requireTicket(value: unknown): Pick<Ticket, 'type' | 'cost'> {
   return {type, cost};
 }
 
+// Accepts dates between 2000 and 2100 in epoch milliseconds.
+function requireTicketDate(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)
+    || value < Date.UTC(2000, 0, 1) || value > Date.UTC(2100, 0, 1)) {
+    throw new functions.https.HttpsError('invalid-argument', 'La fecha de la nota no es válida.');
+  }
+
+  return Math.trunc(value);
+}
+
 function requireClient(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new functions.https.HttpsError('invalid-argument', 'Los datos del cliente no son válidos.');
@@ -112,10 +127,12 @@ export const createTicket = functions.https.onCall(async (data: TicketRequest, c
     throw new functions.https.HttpsError('not-found', 'El cliente no existe.');
   }
 
+  const requestedDate = data?.ticket?.generated;
   const ticketRef = await clientRef.collection('tickets').add({
     ...ticket,
-    generated: Date.now(),
-    paid: false
+    generated: requestedDate ? requireTicketDate(requestedDate) : Date.now(),
+    paid: false,
+    origin: 'manual'
   });
 
   return {ticketId: ticketRef.id};
@@ -137,7 +154,8 @@ export const createClient = functions.https.onCall(async (data: ClientRequest, c
   batch.create(ticketRef, {
     ...ticket,
     generated: Date.now(),
-    paid: false
+    paid: false,
+    origin: 'system'
   });
   await batch.commit();
 
@@ -169,6 +187,26 @@ export const updateTicket = functions.https.onCall(async (data: {
     await ticketRef.update({paid: false, paidDate: FieldValue.delete()});
   }
 
+  return {updated: true};
+});
+
+export const setTicketDate = functions.https.onCall(async (data: {
+  clientId?: unknown;
+  ticketId?: unknown;
+  generated?: unknown;
+}, context) => {
+  requireAdministrator(context);
+
+  const clientId = requireDocumentId(data?.clientId, 'clientId');
+  const ticketId = requireDocumentId(data?.ticketId, 'ticketId');
+  const generated = requireTicketDate(data?.generated);
+  const ticketRef = db.collection('clients').doc(clientId).collection('tickets').doc(ticketId);
+
+  if (!(await ticketRef.get()).exists) {
+    throw new functions.https.HttpsError('not-found', 'La nota no existe.');
+  }
+
+  await ticketRef.update({generated});
   return {updated: true};
 });
 
@@ -247,7 +285,8 @@ async function createTicketsForServiceType(type: string): Promise<number> {
         cost: client.get('service.cost'),
         generated: Date.now(),
         paid: false,
-        type: 'Servicio de recolección semanal'
+        type: 'Servicio de recolección semanal',
+        origin: 'system'
       });
     }
     await batch.commit();
