@@ -9,44 +9,36 @@ import { AccountingModel } from '../models/accounting.model'
 })
 export class AccountingService {
 
-  entradas: Observable<AccountingModel[]>;
-  salidas: Observable<AccountingModel[]>;
+  constructor(private firestore: AngularFirestore) { }
 
-  constructor(private firestore: AngularFirestore) { 
-    this.obtenerEntradas();
-    this.obtenerSalidas();
+  guardarEntrada( data: any ): Promise<unknown> {
+    return this.firestore.collection('accounting').doc('incomes').collection('incomes').add(data);
   }
-
-  guardarEntrada( data:any ): void {
-    this.firestore.collection('accounting').doc('incomes').collection('incomes').add(data).then()
-  }
-  guardarSalida( data:any ): void {
-    this.firestore.collection('accounting').doc('outgoings').collection('outgoings').add(data).then()
+  guardarSalida( data: any ): Promise<unknown> {
+    return this.firestore.collection('accounting').doc('outgoings').collection('outgoings').add(data);
   }
 
-  obtenerEntradas(): void {
-    this.entradas = this.firestore.collection('accounting').doc('incomes').collection('incomes', ref => ref.orderBy('fecha')).snapshotChanges().pipe(
-      map(actions => actions.map(a => {
-        const data = a.payload.doc.data() as AccountingModel;
-        const id = a.payload.doc.id;
-        return { id: id, ...data};
-      }))
-    );
+  // Only records created since `since` (epoch ms): the full history is never needed.
+  obtenerEntradas( since: number ): Observable<AccountingModel[]> {
+    return this.obtener('incomes', since);
   }
-  obtenerSalidas(): void {
-    this.salidas = this.firestore.collection('accounting').doc('outgoings').collection('outgoings', ref => ref.orderBy('fecha')).snapshotChanges().pipe(
-      map(actions => actions.map(a => {
-        const data = a.payload.doc.data() as AccountingModel;
-        const id = a.payload.doc.id;
-        return { id: id, ...data};
-      }))
-    );
+  obtenerSalidas( since: number ): Observable<AccountingModel[]> {
+    return this.obtener('outgoings', since);
   }
 
-  borrarEntrada( id: string): void {
-    this.firestore.collection('accounting').doc('incomes').collection('incomes').doc(id).delete().then();
+  borrarEntrada( id: string): Promise<void> {
+    return this.firestore.collection('accounting').doc('incomes').collection('incomes').doc(id).delete();
   }
-  borrarSalida( id: string): void {
-    this.firestore.collection('accounting').doc('outgoings').collection('outgoings').doc(id).delete().then();
+  borrarSalida( id: string): Promise<void> {
+    return this.firestore.collection('accounting').doc('outgoings').collection('outgoings').doc(id).delete();
+  }
+
+  private obtener( kind: 'incomes' | 'outgoings', since: number ): Observable<AccountingModel[]> {
+    return this.firestore.collection('accounting').doc(kind)
+      .collection<AccountingModel>(kind, ref => ref.where('date', '>=', since)).snapshotChanges().pipe(
+        map(actions => actions
+          .map(a => ({ ...a.payload.doc.data(), id: a.payload.doc.id }))
+          .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha))))
+      );
   }
 }

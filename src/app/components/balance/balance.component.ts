@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { Component, OnDestroy } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AccountingModel } from 'src/app/models/accounting.model';
 import { AccountingService } from '../../services/accounting.service';
@@ -13,7 +14,7 @@ import Swal from 'sweetalert2';
   styles: [
   ]
 })
-export class BalanceComponent implements OnInit {
+export class BalanceComponent implements OnDestroy {
 
   entradaForm: FormGroup;
   salidaForm: FormGroup;
@@ -25,35 +26,30 @@ export class BalanceComponent implements OnInit {
   totalSalidas: number;
 
 
-  constructor(private fb: FormBuilder, public accountingService: AccountingService) { 
+  private destroy$ = new Subject<void>();
+
+  constructor(private fb: FormBuilder, public accountingService: AccountingService) {
     this.crearFormularios();
     const currentDate = new Date();
-    this.accountingService.entradas.subscribe( resp => {
-      this.entradas = resp.filter(entrada => entrada.date >= new Date(currentDate.getFullYear(), currentDate.getMonth()).getTime());
-      this.totalEntradas = 0;
-      this.entradas.forEach(entrada => {
-        this.totalEntradas += entrada.cantidad
-      });
-    }
-      );
-    this.accountingService.salidas.subscribe( resp => {
-      this.salidas = resp.filter(salida => salida.date >= new Date(currentDate.getFullYear(), currentDate.getMonth()).getTime());
-      this.totalSalidas = 0;
-      this.salidas.forEach(salida => {
-        this.totalSalidas += salida.cantidad
-      });
-    }
-      );
-    
+    const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth()).getTime();
+    this.accountingService.obtenerEntradas(monthStart).pipe(takeUntil(this.destroy$)).subscribe(resp => {
+      this.entradas = resp;
+      this.totalEntradas = resp.reduce((total, entrada) => total + entrada.cantidad, 0);
+    });
+    this.accountingService.obtenerSalidas(monthStart).pipe(takeUntil(this.destroy$)).subscribe(resp => {
+      this.salidas = resp;
+      this.totalSalidas = resp.reduce((total, salida) => total + salida.cantidad, 0);
+    });
   }
 
-  ngOnInit(): void {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   guardar(form: string): any {
     if (form === 'entrada') {
       if (this.entradaForm.invalid) {
-        console.log('invalid');
         Object.values( this.entradaForm.controls ).forEach ( control => {
           if ( control instanceof FormGroup ) {
             Object.values( control.controls ).forEach ( contr => contr.markAsTouched() );
@@ -67,12 +63,9 @@ export class BalanceComponent implements OnInit {
         ...this.entradaForm.getRawValue(),
         date: new Date().getTime()
       }
-      console.log(entrada);
-      this.accountingService.guardarEntrada(entrada);
-      console.log('guardando formulario de entrada');
+      this.accountingService.guardarEntrada(entrada).catch(() => this.errorGuardar());
     } else {
       if (this.salidaForm.invalid) {
-        console.log('invalid');
         Object.values( this.salidaForm.controls ).forEach ( control => {
           if ( control instanceof FormGroup ) {
             Object.values( control.controls ).forEach ( contr => contr.markAsTouched() );
@@ -86,8 +79,7 @@ export class BalanceComponent implements OnInit {
         ...this.salidaForm.getRawValue(),
         date: new Date().getTime()
       }
-      this.accountingService.guardarSalida(salida);
-      console.log('guardando formulario de salida');
+      this.accountingService.guardarSalida(salida).catch(() => this.errorGuardar());
     }
   }
 
@@ -103,11 +95,9 @@ export class BalanceComponent implements OnInit {
         cancelButtonText: 'Cancelar'
       }).then((result) => {
         if (result.isConfirmed) {
-          this.accountingService.borrarEntrada( id );
-          Swal.fire(
-            'Registro borrado',
-            'success'
-          );
+          this.accountingService.borrarEntrada( id )
+            .then(() => Swal.fire('Registro borrado', '', 'success'))
+            .catch(() => Swal.fire('Error', 'No se pudo borrar el registro', 'error'));
         } else {
           return;
         }
@@ -123,16 +113,18 @@ export class BalanceComponent implements OnInit {
         cancelButtonText: 'Cancelar'
       }).then((result) => {
         if (result.isConfirmed) {
-          this.accountingService.borrarSalida( id );
-          Swal.fire(
-            'Registro borrado',
-            'success'
-          );
+          this.accountingService.borrarSalida( id )
+            .then(() => Swal.fire('Registro borrado', '', 'success'))
+            .catch(() => Swal.fire('Error', 'No se pudo borrar el registro', 'error'));
         } else {
           return;
         }
       });
     }
+  }
+
+  errorGuardar(): void {
+    Swal.fire('Error', 'No se pudo guardar el registro', 'error');
   }
 
   crearFormularios(): any {
