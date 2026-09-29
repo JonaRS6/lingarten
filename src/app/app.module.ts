@@ -45,6 +45,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { HistoryComponent } from './components/client-form/history/history.component';
 import { BalanceComponent } from './components/balance/balance.component';
 import { LoginComponent } from './components/login/login.component';
+import { ShellComponent } from './components/shared/shell/shell.component';
 
 
 
@@ -62,7 +63,8 @@ import { LoginComponent } from './components/login/login.component';
     DashboardComponent,
     HistoryComponent,
     BalanceComponent,
-    LoginComponent
+    LoginComponent,
+    ShellComponent
   ],
   imports: [
     DataTablesModule,

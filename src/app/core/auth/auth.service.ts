@@ -3,7 +3,7 @@ import { AngularFireAuth } from '@angular/fire/auth';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { Observable } from 'rxjs';
-import { distinctUntilChanged, map, shareReplay } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, shareReplay, take } from 'rxjs/operators';
 
 export const ADMIN_EMAILS = [
   'jersneme6@gmail.com',
@@ -32,10 +32,21 @@ export class AuthService {
       await this.signOut();
       throw new Error('Esta cuenta no está autorizada para usar Lingarten.');
     }
+    // signInWithPopup resolves before authState emits; guards read isAuthorized$,
+    // so wait for it to catch up before anyone navigates.
+    await this.waitForAuthorization(true);
   }
 
-  signOut(): Promise<void> {
-    return this.angularFireAuth.signOut();
+  async signOut(): Promise<void> {
+    await this.angularFireAuth.signOut();
+    await this.waitForAuthorization(false);
+  }
+
+  private waitForAuthorization(expected: boolean): Promise<boolean> {
+    return this.isAuthorized$.pipe(
+      filter(authorized => authorized === expected),
+      take(1)
+    ).toPromise();
   }
 
   private isAdministrator(user: firebase.User | null): boolean {

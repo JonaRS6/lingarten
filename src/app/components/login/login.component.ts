@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { safeReturnUrl } from '../../core/auth/auth.guard';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -23,7 +24,7 @@ export class LoginComponent {
 
     try {
       await this.auth.signInWithGoogle();
-      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/table';
+      const returnUrl = safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
       await this.router.navigateByUrl(returnUrl);
     } catch (error) {
       this.error = error && error.message

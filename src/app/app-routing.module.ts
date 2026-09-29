@@ -5,15 +5,25 @@ import { ClientPanelComponent } from './components/client-panel/client-panel.com
 import { BalanceComponent } from './components/balance/balance.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { LoginComponent } from './components/login/login.component';
-import { AuthGuard } from './core/auth/auth.guard';
+import { ShellComponent } from './components/shared/shell/shell.component';
+import { AuthGuard, GuestGuard } from './core/auth/auth.guard';
 
 const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: 'table', component: ClienttableComponent, canActivate: [AuthGuard] },
-  { path: 'panel', component: DashboardComponent, canActivate: [AuthGuard] },
-  { path: 'balance', component: BalanceComponent, canActivate: [AuthGuard] },
-  { path: 'client/:id', component: ClientPanelComponent, canActivate: [AuthGuard] },
-  { path: '**', pathMatch: 'full', redirectTo: 'table' }
+  { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
+  {
+    path: '',
+    component: ShellComponent,
+    canActivate: [AuthGuard],
+    canActivateChild: [AuthGuard],
+    children: [
+      { path: 'table', component: ClienttableComponent },
+      { path: 'panel', component: DashboardComponent },
+      { path: 'balance', component: BalanceComponent },
+      { path: 'client/:id', component: ClientPanelComponent },
+      { path: '', pathMatch: 'full', redirectTo: 'table' }
+    ]
+  },
+  { path: '**', redirectTo: 'table' }
 ];
 
 @NgModule({
