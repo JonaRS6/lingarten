@@ -35,6 +35,7 @@ import {MatPaginatorModule} from '@angular/material/paginator';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
+import { EMULATOR_PROVIDERS } from './core/firebase/emulators';
 import { ClientPanelComponent } from './components/client-panel/client-panel.component';
 import { ClientTicketsComponent } from './components/client-tickets/client-tickets.component';
 import { ImportFormComponent } from './components/client-form/import-form.component';
@@ -92,7 +93,7 @@ import { LoginComponent } from './components/login/login.component';
     ImportFormComponent,
     TicketFormComponent
   ],
-  providers: [],
+  providers: [...EMULATOR_PROVIDERS],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

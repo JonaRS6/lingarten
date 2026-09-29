@@ -4,7 +4,17 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Local development runs against the Firebase emulators (Firestore + Functions),
+so no production data is touched. Sign-in still uses the real Firebase Auth
+with an administrator Google account.
+
+1. Emulators (Node 24, Java 21+, global `firebase` CLI):
+   `nvm use 24 && npm --prefix functions ci && npm run emulators`
+   — UI at `http://localhost:4000`. Data persists in `.emulator-data/` on exit.
+2. App (Node 12): `nvm use 12 && npm install && npm start`
+   — open `http://localhost:4200/`.
+
+`npm run start:prod-data` serves the app against the real Firebase project.
 
 ## Code scaffolding
 

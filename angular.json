@@ -44,7 +44,7 @@
               "node_modules/bootstrap-notify/bootstrap-notify.js",
               "node_modules/chartist/dist/chartist.js"
             ],
-            "allowedCommonJsDependencies" : [
+            "allowedCommonJsDependencies": [
               "rxjs/add/operator/filter",
               "jquery",
               "chartist"
@@ -80,6 +80,14 @@
               ],
               "serviceWorker": true,
               "ngswConfigPath": "ngsw-config.json"
+            },
+            "emulators": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/core/firebase/emulators.ts",
+                  "with": "src/app/core/firebase/emulators.local.ts"
+                }
+              ]
             }
           }
         },
@@ -91,6 +99,9 @@
           "configurations": {
             "production": {
               "browserTarget": "negocio:build:production"
+            },
+            "emulators": {
+              "browserTarget": "negocio:build:emulators"
             }
           }
         },
