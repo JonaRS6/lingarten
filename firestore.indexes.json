@@ -37,6 +37,38 @@
         }
       ],
       "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "tickets",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "paid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "cost",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tickets",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "paid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "paidDate",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "cost",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [
