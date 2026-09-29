@@ -23,29 +23,12 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
   }
+  // Totals are computed by the getStats function; querying the notes here as
+  // well would read every one of them again.
   getStats(): void {
-    this.service.getStats().then(res => {
-      console.log(res);
-    });
-    let earn = 0;
-    let debt = 0;
-    this.service.getStatsPayed().subscribe(resp => {
-      console.log(resp);
-      resp.forEach(doc => {
-        earn = earn + doc.data().cost;
-        console.log(doc.data().cost);
-      });
-      console.log(earn);
-      this.stats.earn = earn;
-    });
-    this.service.getStatsDebt().subscribe(resp => {
-      console.log(resp);
-      resp.forEach(doc => {
-        debt = debt + doc.data().cost;
-        console.log(doc.data().cost);
-      });
-      console.log(debt);
+    this.service.getStats().then(({ earns, debt }) => {
+      this.stats.earn = earns;
       this.stats.debt = debt;
-    });
+    }).catch(error => console.error('No se pudieron obtener las estadísticas.', error));
   }
 }
