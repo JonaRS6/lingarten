@@ -16,6 +16,7 @@
 
 # Local Firebase emulator data (npm run emulators)
 /.emulator-data
+/.emulator-data.bak
 *-debug.log
 
 # Firebase web configuration is generated locally from the Firebase Console.

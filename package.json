@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve -c emulators",
     "start:prod-data": "ng serve",
+    "pull-prod-data": "bash scripts/pull-prod-firestore.sh",
     "emulators": "npm --prefix functions run build && firebase emulators:start --only functions,firestore --export-on-exit=.emulator-data $([ -d .emulator-data ] && echo --import=.emulator-data)",
     "build": "ng build",
     "prod": "ng build --prod",

@@ -14,6 +14,11 @@ with an administrator Google account.
 2. App (Node 12): `nvm use 12 && npm install && npm start`
    — open `http://localhost:4200/`.
 
+To load a copy of production Firestore into the emulators, stop them and run
+`npm run pull-prod-data` (needs `gcloud auth login` with an owner account). It
+contains real customer data: keep `.emulator-data/` out of git and off shared
+machines.
+
 `npm run start:prod-data` serves the app against the real Firebase project.
 
 ## Code scaffolding
