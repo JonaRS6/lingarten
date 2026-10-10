@@ -4,6 +4,7 @@ import { ClienttableComponent } from './components/clienttable/clienttable.compo
 import { ClientPanelComponent } from './components/client-panel/client-panel.component';
 import { BalanceComponent } from './components/balance/balance.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { PaymentsComponent } from './components/payments/payments.component';
 import { LoginComponent } from './components/login/login.component';
 import { ShellComponent } from './components/shared/shell/shell.component';
 import { AuthGuard, GuestGuard } from './core/auth/auth.guard';
@@ -19,6 +20,7 @@ const routes: Routes = [
       { path: 'table', component: ClienttableComponent },
       { path: 'panel', component: DashboardComponent },
       { path: 'balance', component: BalanceComponent },
+      { path: 'pagos', component: PaymentsComponent },
       { path: 'client/:id', component: ClientPanelComponent },
       { path: '', pathMatch: 'full', redirectTo: 'table' }
     ]

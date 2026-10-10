@@ -1,0 +1,167 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header card-header-icon card-header-info">
+        <div class="card-icon">
+          <i class="fas fa-file-import"></i>
+        </div>
+        <h4 class="card-title">Importar estado de cuenta</h4>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">
+          Descarga de tu banca en línea los movimientos en CSV. Los depósitos que lleven la referencia
+          de un cliente en su descripción se aplican solos a sus notas, de la más antigua a la más reciente.
+        </p>
+        <div class="d-flex align-items-center flex-wrap">
+          <label class="btn btn-info mb-0">
+            <i class="fas fa-upload"></i> Elegir archivo CSV
+            <input type="file" accept=".csv,text/csv,text/plain" hidden (change)="loadFile($event)">
+          </label>
+          <span *ngIf="fileName" class="ml-3">{{fileName}} · {{rows.length}} filas</span>
+          <button type="button" class="btn btn-link ml-auto" (click)="assignMissingReferences()">
+            Asignar referencias a clientes sin referencia
+          </button>
+        </div>
+
+        <div *ngIf="rows.length > 0" class="mt-3">
+          <div class="row">
+            <div class="col-md-3">
+              <mat-form-field>
+                <mat-select placeholder="Fila de encabezados" [(ngModel)]="headerRow" (selectionChange)="changeHeaderRow()">
+                  <mat-option *ngFor="let index of headerRowOptions" [value]="index">
+                    {{index + 1}}: {{rows[index].join(' · ') | slice:0:60}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-md-3">
+              <mat-form-field>
+                <mat-select placeholder="Columna de fecha" [(ngModel)]="columns.date" (selectionChange)="refresh()">
+                  <mat-option *ngFor="let name of header; let i = index" [value]="i">{{name || 'Columna ' + (i + 1)}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-md-3">
+              <mat-form-field>
+                <mat-select placeholder="Columna de depósitos (abonos)" [(ngModel)]="columns.amount" (selectionChange)="refresh()">
+                  <mat-option *ngFor="let name of header; let i = index" [value]="i">{{name || 'Columna ' + (i + 1)}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-md-3">
+              <mat-form-field>
+                <mat-select placeholder="Columnas con concepto o referencia" multiple [(ngModel)]="columns.description" (selectionChange)="refresh()">
+                  <mat-option *ngFor="let name of header; let i = index" [value]="i">{{name || 'Columna ' + (i + 1)}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div *ngIf="columnsReady">
+            <p>
+              <b>{{deposits.length}}</b> depósitos por {{total | currency}}
+              <span *ngIf="skipped > 0" class="text-muted"> · {{skipped}} filas omitidas (cargos, saldos o sin fecha)</span>
+            </p>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead class="text-primary">
+                  <tr><td>Fecha</td><td>Descripción</td><td class="text-right">Importe</td></tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let deposit of preview">
+                    <td>{{deposit.date | date}}</td>
+                    <td class="description">{{deposit.description}}</td>
+                    <td class="text-right">{{deposit.amount | currency}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button type="button" class="btn btn-success" [disabled]="importing || deposits.length === 0" (click)="importStatement()">
+              <i class="fa" [ngClass]="importing ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+              {{ importing ? ' Importando…' : ' Importar ' + deposits.length + ' depósitos' }}
+            </button>
+            <button type="button" class="btn btn-outline-danger" [disabled]="importing" (click)="clearFile()">Descartar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header card-header-icon card-header-warning">
+        <div class="card-icon">
+          <i class="fas fa-question"></i>
+        </div>
+        <h4 class="card-title">Pagos por conciliar ({{unmatched.length}})</h4>
+      </div>
+      <div class="card-body">
+        <p *ngIf="unmatched.length === 0" class="text-muted">No hay depósitos pendientes de asignar.</p>
+        <div *ngIf="unmatched.length > 0" class="table-responsive">
+          <table class="table">
+            <thead class="text-primary">
+              <tr><td>Fecha</td><td>Descripción</td><td class="text-right">Importe</td><td>Cliente</td><td></td></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of unmatched">
+                <td>{{payment.receivedAt | date}}</td>
+                <td class="description">{{payment.description}}</td>
+                <td class="text-right">{{payment.amount | currency}}</td>
+                <td>
+                  <mat-form-field>
+                    <mat-select placeholder="Elegir cliente" [(ngModel)]="selection[payment.id]">
+                      <mat-option *ngFor="let option of clientOptions" [value]="option.id">{{option.label}}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </td>
+                <td class="text-nowrap">
+                  <button type="button" class="btn btn-success btn-sm" [disabled]="!selection[payment.id] || busy[payment.id]" (click)="assign(payment)">Asignar</button>
+                  <button type="button" class="btn btn-link btn-sm" [disabled]="busy[payment.id]" (click)="ignore(payment)">Ignorar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header card-header-icon card-header-success">
+        <div class="card-icon">
+          <i class="fas fa-history"></i>
+        </div>
+        <h4 class="card-title">Últimos pagos importados</h4>
+      </div>
+      <div class="card-body table-responsive">
+        <table class="table">
+          <thead class="text-primary">
+            <tr><td>Fecha</td><td>Descripción</td><td class="text-right">Importe</td><td>Estado</td><td>Cliente</td><td>Notas pagadas</td></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let payment of recent">
+              <td>{{payment.receivedAt | date}}</td>
+              <td class="description">{{payment.description}}</td>
+              <td class="text-right">{{payment.amount | currency}}</td>
+              <td>{{statusLabel(payment)}}</td>
+              <td>
+                <a *ngIf="payment.clientId" [routerLink]="['/client', payment.clientId]">{{clientName(payment.clientId)}}</a>
+              </td>
+              <td>
+                <span *ngIf="payment.status === 'applied'">
+                  {{payment.appliedTickets?.length || 0}}
+                  <span *ngIf="payment.creditAfter > 0" class="text-muted"> · saldo a favor {{payment.creditAfter | currency}}</span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

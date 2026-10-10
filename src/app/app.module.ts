@@ -48,6 +48,7 @@ import { BalanceComponent } from './components/balance/balance.component';
 import { LoginComponent } from './components/login/login.component';
 import { ShellComponent } from './components/shared/shell/shell.component';
 import { TicketPrintDialogComponent } from './components/ticket-print/ticket-print-dialog.component';
+import { PaymentsComponent } from './components/payments/payments.component';
 
 
 
@@ -67,7 +68,8 @@ import { TicketPrintDialogComponent } from './components/ticket-print/ticket-pri
     BalanceComponent,
     LoginComponent,
     ShellComponent,
-    TicketPrintDialogComponent
+    TicketPrintDialogComponent,
+    PaymentsComponent
   ],
   imports: [
     DataTablesModule,
