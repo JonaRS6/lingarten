@@ -13,8 +13,25 @@ service cloud.firestore {
 
     // The dashboard contains customer and billing data. Only verified
     // administrator accounts may access it.
-    match /{document=**} {
-      allow read, write: if isAdministrator();
+    match /{collection}/{document=**} {
+      allow read: if isAdministrator();
+      // Payments, references and their counter are written only by functions.
+      allow write: if isAdministrator()
+        && !(collection in ['clients', 'payments', 'paymentRefs', 'counters']);
+    }
+
+    // A client's reference and credit are kept by functions, so a stale form
+    // cannot overwrite them.
+    match /clients/{clientId} {
+      allow create: if isAdministrator()
+        && !request.resource.data.keys().hasAny(['paymentRef', 'credit']);
+      allow update: if isAdministrator()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paymentRef', 'credit']);
+      allow delete: if isAdministrator();
+
+      match /{subcollection=**} {
+        allow write: if isAdministrator();
+      }
     }
   }
 }
