@@ -26,6 +26,9 @@ export class ClienteModel {
     position: number;
     active: boolean;
     printq: boolean;
+    // Bank payment reference and credit are kept by the server.
+    paymentRef?: string;
+    credit?: number;
     constructor() {
         this.registerDate = new Date();
         this.position = 0;

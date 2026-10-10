@@ -11,6 +11,9 @@ export interface Ticket {
     cost: number;
     paidDate?: number;
     origin?: 'manual' | 'system';
+    // Deposit that paid the note, when it was paid from a bank statement.
+    paymentId?: string;
+    paidWithCredit?: boolean;
 }
 // Shape returned by ClientdataService.getClientTickets.
 export interface StoredTicket {

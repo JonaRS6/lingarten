@@ -66,6 +66,9 @@ export class ClientdataService {
       ...cliente
     };
     delete clienteTemp.id;
+    // Kept by the server; a value read when the form opened may be stale.
+    delete clienteTemp.paymentRef;
+    delete clienteTemp.credit;
     return this.clientsList.doc(cliente.id).update(clienteTemp).then( () => {
       f = true;
       return f;

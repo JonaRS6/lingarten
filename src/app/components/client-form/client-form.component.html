@@ -225,6 +225,12 @@
               Fecha de cancelación: 
               {{cliente.cancelDate | date}}
              </div>
+             <div *ngIf="cliente.paymentRef" class="col-md-4">
+              Referencia de pago: <b>{{cliente.paymentRef}}</b>
+             </div>
+             <div *ngIf="cliente.credit > 0" class="col-md-4">
+              Saldo a favor: {{cliente.credit | currency}}
+             </div>
            </div>
           </div>
          

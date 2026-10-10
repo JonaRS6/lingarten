@@ -17,6 +17,8 @@ export interface PrintJob {
 
 const CONCEPT_X = 12;
 const CONCEPT_MAX_WIDTH = 68;
+// Below the total, in the blank margin at the foot of the A6 form.
+const REFERENCE_Y = 138;
 
 @Injectable({
   providedIn: 'root'
@@ -67,6 +69,12 @@ export class TicketPrintService {
     doc.text(`${note.cost}.00`, 84, 80);
     // Total
     doc.text(`${note.cost}.00`, 84, 127);
+    // Referencia para depósitos y transferencias
+    if (client.paymentRef) {
+      doc.setFontSize(8);
+      doc.text(`Referencia de pago: ${client.paymentRef}`, CONCEPT_X, REFERENCE_Y);
+      doc.setFontSize(10);
+    }
   }
 
   private getPrintDay( d: number, m: number, y: number ): Date {
