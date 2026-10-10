@@ -29,7 +29,7 @@ service cloud.firestore {
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paymentRef', 'credit']);
       allow delete: if isAdministrator();
 
-      match /{subcollection=**} {
+      match /{subcollection}/{document=**} {
         allow write: if isAdministrator();
       }
     }
