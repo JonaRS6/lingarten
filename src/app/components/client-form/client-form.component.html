@@ -10,6 +10,25 @@
         <h4 class="card-title">Información del cliente</h4>
       </div>
       <div class="card-body">
+        <div *ngIf="payment$ | async as payment" class="payment-box d-flex align-items-center flex-wrap mb-3">
+          <div class="mr-4">
+            <div class="payment-label">Referencia de pago</div>
+            <div *ngIf="payment.ref; else noRef" class="d-flex align-items-center">
+              <span class="payment-ref">{{payment.ref}}</span>
+              <button type="button" class="btn btn-link btn-sm ml-2" (click)="copyReference(payment.ref)"
+                      [matTooltip]="copied ? 'Copiada' : 'Copiar'">
+                <i class="far" [ngClass]="copied ? 'fa-check-circle' : 'fa-copy'"></i>
+              </button>
+            </div>
+            <ng-template #noRef>
+              <span class="text-muted">Sin referencia. Asígnala desde <a routerLink="/pagos">Pagos</a>.</span>
+            </ng-template>
+          </div>
+          <div *ngIf="payment.credit > 0">
+            <div class="payment-label">Saldo a favor</div>
+            <span class="payment-credit">{{payment.credit | currency}}</span>
+          </div>
+        </div>
         <form
           #f="ngForm"
           autocomplete="off"
@@ -224,12 +243,6 @@
              <div *ngIf="!cliente.active" class="col-md-4">
               Fecha de cancelación: 
               {{cliente.cancelDate | date}}
-             </div>
-             <div *ngIf="cliente.paymentRef" class="col-md-4">
-              Referencia de pago: <b>{{cliente.paymentRef}}</b>
-             </div>
-             <div *ngIf="cliente.credit > 0" class="col-md-4">
-              Saldo a favor: {{cliente.credit | currency}}
              </div>
            </div>
           </div>

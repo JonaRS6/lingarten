@@ -9,13 +9,18 @@ import {MatDialog} from '@angular/material/dialog';
 import { ImportFormComponent } from './import-form.component';
 import { Ticket } from '../../models/ticket-data.model';
 import { Location } from '@angular/common';
-import { take } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-client-form',
   templateUrl: './client-form.component.html',
-  styles: [
-  ]
+  styles: [`
+    .payment-box { background: #f1f8e9; border-left: 4px solid #4caf50; border-radius: 4px; padding: 12px 16px; }
+    .payment-label { font-size: 12px; text-transform: uppercase; color: #6c757d; }
+    .payment-ref { font-size: 26px; font-weight: 500; letter-spacing: 3px; font-family: monospace; }
+    .payment-credit { font-size: 20px; font-weight: 500; }
+  `]
 })
 export class ClientFormComponent implements OnInit {
 
@@ -25,6 +30,9 @@ export class ClientFormComponent implements OnInit {
   cliente: ClienteModel = new ClienteModel();
   printq : boolean;
   saving = false;
+  // Live, unlike the form: references and credit change from the payments page.
+  payment$: Observable<{ ref?: string; credit?: number }>;
+  copied = false;
   constructor( private fb: FormBuilder, private service: ClientdataService,
                private router: ActivatedRoute, private navigation: Router,
                public dialog: MatDialog, private location: Location  ) {
@@ -39,10 +47,22 @@ export class ClientFormComponent implements OnInit {
         this.writeForm(client);
       });
       this.cliente.id = id;
+      this.payment$ = this.service.getClient( id ).pipe(
+        map(client => ({ ref: client.paymentRef, credit: client.credit }))
+      );
     }
    }
 
   ngOnInit(): void {
+  }
+  async copyReference( reference: string ): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(reference);
+      this.copied = true;
+      setTimeout(() => this.copied = false, 2000);
+    } catch (error) {
+      console.error('No se pudo copiar la referencia.', error);
+    }
   }
   goBack(): void {
     this.location.back();
