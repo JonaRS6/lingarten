@@ -9,6 +9,8 @@ import { TicketData, Ticket } from '../models/ticket-data.model';
 import { FormControl } from '@angular/forms';
 import { AuthService } from '../core/auth/auth.service';
 
+const SAVE_TIMEOUT_MS = 15000;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -69,13 +71,17 @@ export class ClientdataService {
     // Kept by the server; a value read when the form opened may be stale.
     delete clienteTemp.paymentRef;
     delete clienteTemp.credit;
-    return this.clientsList.doc(cliente.id).update(clienteTemp).then( () => {
+    const update = this.clientsList.doc(cliente.id).update(clienteTemp).then( () => {
       f = true;
       return f;
     }).catch(() => {
       f = false;
       return f;
     });
+    // The update only resolves once the server acknowledges it; without a
+    // connection it would keep the form waiting forever.
+    const timeout = new Promise<boolean>(resolve => setTimeout(() => resolve(false), SAVE_TIMEOUT_MS));
+    return Promise.race([update, timeout]);
   }
   async cancelClient( cliente: ClienteModel ): Promise<void> {
     const cancelDate = new Date().getTime();
