@@ -35,6 +35,7 @@ import {MatMenuModule} from '@angular/material/menu';
 // Firebase
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireAuthModule } from '@angular/fire/auth';
+import { SETTINGS as FIRESTORE_SETTINGS } from '@angular/fire/firestore';
 import { environment } from '../environments/environment';
 import { EMULATOR_PROVIDERS } from './core/firebase/emulators';
 import { ClientPanelComponent } from './components/client-panel/client-panel.component';
@@ -102,7 +103,13 @@ import { PaymentsComponent } from './components/payments/payments.component';
     TicketFormComponent,
     TicketPrintDialogComponent
   ],
-  providers: [...EMULATOR_PROVIDERS],
+  providers: [
+    // Some antivirus and proxies hold back Firestore's streaming connection,
+    // so writes are never acknowledged. Long polling gets through them.
+    { provide: FIRESTORE_SETTINGS, useValue: { experimentalForceLongPolling: true } },
+    // Listed last so the emulator settings replace the ones above.
+    ...EMULATOR_PROVIDERS
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
