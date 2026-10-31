@@ -15,9 +15,9 @@ export interface PrintJob {
   note: PrintableNote;
 }
 
-// Concept row sits ~3 lines (10pt) below the form's header and ~2 tabs in.
+// Concept row sits ~6 lines (10pt) below the form's header and ~2 tabs in.
 const CONCEPT_X = 20;
-const CONCEPT_Y = 92;
+const CONCEPT_Y = 104;
 const CONCEPT_MAX_WIDTH = 60;
 const REFERENCE_X = 12;
 // Below the total, in the blank margin at the foot of the A6 form.
