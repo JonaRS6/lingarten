@@ -15,8 +15,11 @@ export interface PrintJob {
   note: PrintableNote;
 }
 
-const CONCEPT_X = 12;
-const CONCEPT_MAX_WIDTH = 68;
+// Concept row sits ~3 lines (10pt) below the form's header and ~2 tabs in.
+const CONCEPT_X = 20;
+const CONCEPT_Y = 92;
+const CONCEPT_MAX_WIDTH = 60;
+const REFERENCE_X = 12;
 // Below the total, in the blank margin at the foot of the A6 form.
 const REFERENCE_Y = 138;
 
@@ -64,15 +67,15 @@ export class TicketPrintService {
     doc.text(`${client.address.street} #${client.address.no}, ${client.address.colony}`, 28, 64);
     // Concepto
     if (note.concept) {
-      doc.text(doc.splitTextToSize(note.concept, CONCEPT_MAX_WIDTH), CONCEPT_X, 80);
+      doc.text(doc.splitTextToSize(note.concept, CONCEPT_MAX_WIDTH), CONCEPT_X, CONCEPT_Y);
     }
-    doc.text(`${note.cost}.00`, 84, 80);
+    doc.text(`${note.cost}.00`, 84, CONCEPT_Y);
     // Total
     doc.text(`${note.cost}.00`, 84, 127);
     // Referencia para depósitos y transferencias
     if (client.paymentRef) {
       doc.setFontSize(8);
-      doc.text(`Referencia de pago: ${client.paymentRef}`, CONCEPT_X, REFERENCE_Y);
+      doc.text(`Referencia de pago: ${client.paymentRef}`, REFERENCE_X, REFERENCE_Y);
       doc.setFontSize(10);
     }
   }
