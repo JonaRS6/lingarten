@@ -96,7 +96,11 @@ import { PaymentsComponent } from './components/payments/payments.component';
     MatMenuModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
-    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
+    // Firestore's long polling keeps the app from ever stabilizing, so don't wait on it.
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ],
   entryComponents: [
     ImportFormComponent,
